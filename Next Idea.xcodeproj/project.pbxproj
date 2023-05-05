@@ -16,6 +16,18 @@
 		4CCB16422A051F5000FE5376 /* Next_IdeaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16412A051F5000FE5376 /* Next_IdeaTests.swift */; };
 		4CCB164C2A051F5000FE5376 /* Next_IdeaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB164B2A051F5000FE5376 /* Next_IdeaUITests.swift */; };
 		4CCB164E2A051F5000FE5376 /* Next_IdeaUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB164D2A051F5000FE5376 /* Next_IdeaUITestsLaunchTests.swift */; };
+		4CCB165B2A05214100FE5376 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB165A2A05214100FE5376 /* HomeView.swift */; };
+		4CCB165D2A05214D00FE5376 /* ListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB165C2A05214D00FE5376 /* ListView.swift */; };
+		4CCB165F2A05215700FE5376 /* CompletedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB165E2A05215700FE5376 /* CompletedView.swift */; };
+		4CCB16612A05216300FE5376 /* TaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16602A05216300FE5376 /* TaskView.swift */; };
+		4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16622A05216900FE5376 /* TaskDetailsView.swift */; };
+		4CCB16652A05217000FE5376 /* ProjectListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16642A05217000FE5376 /* ProjectListView.swift */; };
+		4CCB16672A05217600FE5376 /* TagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16662A05217600FE5376 /* TagsView.swift */; };
+		4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */; };
+		4CD17BD12A054F6D005BA2E6 /* ProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */; };
+		4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */; };
+		4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */; };
+		4CD17BD72A055676005BA2E6 /* ProjectPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD62A055676005BA2E6 /* ProjectPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +48,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C5B301B2A05281300D41F97 /* Next-Idea-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Next-Idea-Info.plist"; sourceTree = SOURCE_ROOT; };
 		4CCB16272A051F4F00FE5376 /* Next Idea.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Next Idea.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Next_IdeaApp.swift; sourceTree = "<group>"; };
 		4CCB162C2A051F4F00FE5376 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -49,6 +62,18 @@
 		4CCB16472A051F5000FE5376 /* Next IdeaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Next IdeaUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCB164B2A051F5000FE5376 /* Next_IdeaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Next_IdeaUITests.swift; sourceTree = "<group>"; };
 		4CCB164D2A051F5000FE5376 /* Next_IdeaUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Next_IdeaUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		4CCB165A2A05214100FE5376 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		4CCB165C2A05214D00FE5376 /* ListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListView.swift; sourceTree = "<group>"; };
+		4CCB165E2A05215700FE5376 /* CompletedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletedView.swift; sourceTree = "<group>"; };
+		4CCB16602A05216300FE5376 /* TaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskView.swift; sourceTree = "<group>"; };
+		4CCB16622A05216900FE5376 /* TaskDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailsView.swift; sourceTree = "<group>"; };
+		4CCB16642A05217000FE5376 /* ProjectListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListView.swift; sourceTree = "<group>"; };
+		4CCB16662A05217600FE5376 /* TagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsView.swift; sourceTree = "<group>"; };
+		4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForView.swift; sourceTree = "<group>"; };
+		4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectView.swift; sourceTree = "<group>"; };
+		4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailsView.swift; sourceTree = "<group>"; };
+		4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTaskView.swift; sourceTree = "<group>"; };
+		4CD17BD62A055676005BA2E6 /* ProjectPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,8 +124,21 @@
 		4CCB16292A051F4F00FE5376 /* Next Idea */ = {
 			isa = PBXGroup;
 			children = (
+				4C5B301B2A05281300D41F97 /* Next-Idea-Info.plist */,
 				4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */,
 				4CCB162C2A051F4F00FE5376 /* ContentView.swift */,
+				4CCB165A2A05214100FE5376 /* HomeView.swift */,
+				4CCB165C2A05214D00FE5376 /* ListView.swift */,
+				4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */,
+				4CCB165E2A05215700FE5376 /* CompletedView.swift */,
+				4CCB16602A05216300FE5376 /* TaskView.swift */,
+				4CCB16622A05216900FE5376 /* TaskDetailsView.swift */,
+				4CCB16642A05217000FE5376 /* ProjectListView.swift */,
+				4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */,
+				4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */,
+				4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */,
+				4CD17BD62A055676005BA2E6 /* ProjectPicker.swift */,
+				4CCB16662A05217600FE5376 /* TagsView.swift */,
 				4CCB162E2A051F5000FE5376 /* Assets.xcassets */,
 				4CCB16332A051F5000FE5376 /* Persistence.swift */,
 				4CCB16382A051F5000FE5376 /* Info.plist */,
@@ -265,10 +303,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CCB16652A05217000FE5376 /* ProjectListView.swift in Sources */,
 				4CCB16342A051F5000FE5376 /* Persistence.swift in Sources */,
 				4CCB162D2A051F4F00FE5376 /* ContentView.swift in Sources */,
+				4CD17BD72A055676005BA2E6 /* ProjectPicker.swift in Sources */,
+				4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */,
+				4CCB165F2A05215700FE5376 /* CompletedView.swift in Sources */,
+				4CCB165D2A05214D00FE5376 /* ListView.swift in Sources */,
 				4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */,
+				4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */,
+				4CCB165B2A05214100FE5376 /* HomeView.swift in Sources */,
+				4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */,
 				4CCB16372A051F5000FE5376 /* Next_Idea.xcdatamodeld in Sources */,
+				4CCB16672A05217600FE5376 /* TagsView.swift in Sources */,
+				4CCB16612A05216300FE5376 /* TaskView.swift in Sources */,
+				4CD17BD12A054F6D005BA2E6 /* ProjectView.swift in Sources */,
+				4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,11 +475,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Next-Idea-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -454,11 +506,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Next-Idea-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

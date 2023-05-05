@@ -14,8 +14,8 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let newTask = Task(context: viewContext)
+            newTask.createddate = Date()
         }
         do {
             try viewContext.save()
@@ -29,6 +29,11 @@ struct PersistenceController {
     }()
 
     let container: NSPersistentCloudKitContainer
+    
+    // Added by me for convenience:
+    var viewContext: NSManagedObjectContext {
+        return container.viewContext
+    }
 
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Next_Idea")
@@ -52,5 +57,11 @@ struct PersistenceController {
             }
         })
         container.viewContext.automaticallyMergesChangesFromParent = true
+    }
+    
+    func save() { // save changes in the managed object context
+        if viewContext.hasChanges {
+            try? viewContext.save()
+        }
     }
 }
