@@ -21,14 +21,18 @@ struct ListView: View {
     
     @State private var showProjectPicker = false
     @State private var showDatePicker = false
+    @State private var showSearchView = false
+    
+    @State private var showClearNowAlert = false
+    @State private var showClearNextAlert = false
     
     // Define lists:
     let lists = [(Int16(0), "Inbox"), (Int16(1), "Now"), (Int16(2), "Next"), (Int16(3), "Someday")]
     
     var body: some View {
         NavigationStack {
-            VStack {
-                ZStack(alignment: .bottom) {
+            VStack { // Contains ZStack and Quick action buttons
+                ZStack(alignment: .bottom) { // Contains task list, Clear completed tasks button, and Add task buttons
                     
                     List {
                         
@@ -63,12 +67,10 @@ struct ListView: View {
                         }
                         
                         // Show the tasks:
-                        
-                        // NOTE: IF I MODIFY THIS FILTER, I HAVE TO MODIFY IT IN MOVEITEM TOO! Otherwise dragging tasks will not work anymore
-                        ForEach(tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })  ) { task in // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task. If the task has no project, or its project is set up to display all tasks, or just the first task and this is the first non-completed task of the project, display the task
+                            
+                        ForEach(tasks.filter({filterResult(task: $0)})) { task in
                             HStack {
                                 if tasks.filter({$0.selected}).count > 0 {
-                                    //                                    Image(systemName: task.selected ? "pin.fill" : "pin.slash.fill")
                                     Image(systemName: task.selected ? "circle.fill" : "circle")
                                         .foregroundColor(task.selected ? .teal : nil)
                                         .onTapGesture {
@@ -76,6 +78,7 @@ struct ListView: View {
                                             impactMed.impactOccurred() // haptic feedback
                                             
                                             task.selected.toggle()
+                                            PersistenceController.shared.save()
                                         }
                                 }
                                 
@@ -87,16 +90,22 @@ struct ListView: View {
                                     NavigationLink {
                                         ProjectTaskView(project: task.project ?? Project())
                                     } label: {
-                                        TaskView(task:task)
-                                        Image(systemName: "book.fill")
-                                            .resizable()
-                                            .frame(width: 12, height: 12)
+                                        HStack {
+                                            TaskView(task:task)
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "book.fill")
+                                                .resizable()
+                                                .frame(width: 12, height: 12)
+                                        }
                                     }
                                 }
                             }
                         }
                         .onMove(perform: moveItem)
                     }
+                    .listStyle(PlainListStyle())
                     
                     if tasks.filter({$0.list == list && !$0.completed && $0.ticked}).count > 0 { // if there are ticked tasks displayed, show a button to mark them as complete, and therefore hide them
                         Button {
@@ -119,7 +128,9 @@ struct ListView: View {
                     }
                 }
                 
+                QuickActionView()
                 
+                /*
                 // Second element of the VStack: Quick action buttons:
                 
                 if tasks.filter({$0.selected}).count > 0 { // show icons to move the tasks to other lists if at least one task is selected
@@ -226,10 +237,13 @@ struct ListView: View {
                     .background(.black)
                 }
                 
-                
+                */
+            }
+            .sheet(isPresented: $showSearchView) {
+                SearchView()
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         if tasks.filter({$0.selected}).count > 0 {
                             Button {
@@ -238,10 +252,19 @@ struct ListView: View {
                                 Label("", systemImage: "pip.remove")
                             }
                         }
+                        
+                        Button {
+                            showSearchView.toggle()
+                        } label: {
+                            Label("", systemImage: "magnifyingglass")
+                        }
+                        
+                        EditButton()
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     HStack {
+                        
                         Button {
                             withAnimation {
                                 showDeferred.toggle()
@@ -255,12 +278,31 @@ struct ListView: View {
                             }
                         }
                         
-                        EditButton()
+                        if list == 1 {
+                            clearNow
+                        }
+                        else if list == 2 {
+                            clearNext
+                        }
                     }
                 }
             }
             .navigationTitle(list == 0 ? "Inbox" : list == 1 ? "Now" : list == 2 ? "Next" : "Someday")
             .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    
+    private func filterResult(task: Task) -> Bool { // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task. If the task has no project, or its project is set up to display all tasks, or just the first task and this is the first non-completed task of the project, display the task
+        if task.list == list // task is in the specified list
+            && !task.completed // task is not completed
+            && ( showDeferred || !task.dateactive || !task.hideuntildate || Calendar.current.startOfDay(for: task.date ?? Date()) <= Date() ) // I want to show deferred tasks, or the task doesn't have a date, or isn't hidden until that date, or the start of day of the date is in the past
+            && ( task.project == nil || task.project?.displayoption == "All" || (task.project?.displayoption == "First" && (task.project?.isFirstTask(order: task.order, list: task.list) != false) ) ) { // the task has no project, or all of the project's tasks should be displayed, or only the first one should be displayed, and this is the first one. If the project is on hold, the task will therefore not be displayed
+            
+            return true
+        }
+        
+        else {
+            return false
         }
     }
     
@@ -270,6 +312,7 @@ struct ListView: View {
                 task.selected = false
             }
         }
+        PersistenceController.shared.save()
     }
     
     private func moveItem(at sets:IndexSet, destination: Int) {
@@ -283,29 +326,30 @@ struct ListView: View {
             let endIndex = destination - 1
 //            print(startIndex)
 //            print(endIndex)
-            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order
+//            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order
+            var startOrder = tasks.filter({filterResult(task: $0)})[itemToMove].order
 //            print(startOrder)
             // Change the order of all tasks between the task to move and the destination:
             while startIndex <= endIndex {
-                tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[startIndex].order = startOrder
+                tasks.filter({filterResult(task: $0)})[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order = startOrder // set the moved task's order to its final value
+            tasks.filter({filterResult(task: $0)})[itemToMove].order = startOrder // set the moved task's order to its final value
         }
         
         // Else if the item is moving up:
         else if itemToMove > destination {
             var startIndex = destination
             let endIndex = itemToMove - 1
-            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[destination].order + 1
-            let newOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[destination].order
+            var startOrder = tasks.filter({filterResult(task: $0)})[destination].order + 1
+            let newOrder = tasks.filter({filterResult(task: $0)})[destination].order
             while startIndex <= endIndex {
-                tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[startIndex].order = startOrder
+                tasks.filter({filterResult(task: $0)})[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order = newOrder // set the moved task's order to its final value
+            tasks.filter({filterResult(task: $0)})[itemToMove].order = newOrder // set the moved task's order to its final value
         }
         
         PersistenceController.shared.save() // save the item
@@ -357,6 +401,50 @@ struct ListView: View {
                 .clipShape(Circle())
         }
         .padding(.bottom, 8)
+    }
+    
+    var clearNow: some View {
+        Button {
+            showClearNowAlert = true
+        } label: {
+            Label("", systemImage: "xmark.circle")
+        }
+        .alert(isPresented: $showClearNowAlert) {
+            Alert(title: Text("This will move all tasks that are not due now to the Next list"), message: Text("Are you sure?"), primaryButton: .default(Text("OK")) {
+                
+                // Clear all tasks from Now, except the ones that are due or overdue:
+                for task in tasks.reversed() { // go through the tasks in reverse order, so that they end up in the same order as they were initially
+                    if(task.list == 1 && ( !task.dateactive || Calendar.current.startOfDay(for: task.date ?? Date()) > Calendar.current.startOfDay(for: Date()) )) { // if the task is in the Now list, and has no date or is due after today
+                        task.list = 2 // move the task to the top of the Next list
+                        task.order = (tasks.filter({$0.list == 2}).first?.order ?? 0) - 1 // set the order of the task to the order of the first task of the destination list minus 1
+                    }
+                }
+                PersistenceController.shared.save() // save the item
+                
+            }, secondaryButton: .cancel())
+        }
+    }
+    
+    var clearNext: some View {
+        Button {
+            showClearNextAlert = true
+        } label: {
+            Label("", systemImage: "xmark.circle")
+        }
+        .alert(isPresented: $showClearNextAlert) {
+            Alert(title: Text("This will move all tasks to the Someday list"), message: Text("Are you sure?"), primaryButton: .default(Text("OK")) {
+                
+                // Clear all tasks from Next:
+                for task in tasks.reversed() { // go through the elements in reverse order, so that they end up in the same order as they were initially
+                    if(task.list == 2) { // if the item is in the Next list
+                        task.list = 3 // move the item to the top of the Someday list
+                        task.order = (tasks.filter({$0.list == 3}).first?.order ?? 0) - 1 // set the order of the task to the order of the first task of the destination list minus 1
+                    }
+                }
+                PersistenceController.shared.save() // save the item
+                
+            }, secondaryButton: .cancel())
+        }
     }
 }
 

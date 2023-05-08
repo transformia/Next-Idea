@@ -22,7 +22,6 @@
 		4CCB16612A05216300FE5376 /* TaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16602A05216300FE5376 /* TaskView.swift */; };
 		4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16622A05216900FE5376 /* TaskDetailsView.swift */; };
 		4CCB16652A05217000FE5376 /* ProjectListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16642A05217000FE5376 /* ProjectListView.swift */; };
-		4CCB16672A05217600FE5376 /* TagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16662A05217600FE5376 /* TagsView.swift */; };
 		4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */; };
 		4CD17BD12A054F6D005BA2E6 /* ProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */; };
 		4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */; };
@@ -31,6 +30,9 @@
 		4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */; };
 		4CD17BDC2A06C6AA005BA2E6 /* DueTodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */; };
 		4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */; };
+		4CE893E92A095DD700755167 /* QuickActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893E82A095DD700755167 /* QuickActionView.swift */; };
+		4CE893EB2A0963B300755167 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893EA2A0963B300755167 /* SearchView.swift */; };
+		4CE893F02A09750400755167 /* TagsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893EF2A09750400755167 /* TagsPickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,7 +73,6 @@
 		4CCB16602A05216300FE5376 /* TaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskView.swift; sourceTree = "<group>"; };
 		4CCB16622A05216900FE5376 /* TaskDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailsView.swift; sourceTree = "<group>"; };
 		4CCB16642A05217000FE5376 /* ProjectListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListView.swift; sourceTree = "<group>"; };
-		4CCB16662A05217600FE5376 /* TagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsView.swift; sourceTree = "<group>"; };
 		4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForView.swift; sourceTree = "<group>"; };
 		4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectView.swift; sourceTree = "<group>"; };
 		4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailsView.swift; sourceTree = "<group>"; };
@@ -81,6 +82,9 @@
 		4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DueTodayView.swift; sourceTree = "<group>"; };
 		4CD17BDD2A06D5CF005BA2E6 /* Next Idea.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Next Idea.entitlements"; sourceTree = "<group>"; };
 		4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerView.swift; sourceTree = "<group>"; };
+		4CE893E82A095DD700755167 /* QuickActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionView.swift; sourceTree = "<group>"; };
+		4CE893EA2A0963B300755167 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		4CE893EF2A09750400755167 /* TagsPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsPickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,24 +136,19 @@
 			isa = PBXGroup;
 			children = (
 				4CD17BDD2A06D5CF005BA2E6 /* Next Idea.entitlements */,
-				4CD17BD82A06BB70005BA2E6 /* Core data */,
 				4C5B301B2A05281300D41F97 /* Next-Idea-Info.plist */,
 				4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */,
-				4CCB162C2A051F4F00FE5376 /* ContentView.swift */,
 				4CCB165A2A05214100FE5376 /* HomeView.swift */,
-				4CCB165C2A05214D00FE5376 /* ListView.swift */,
+				4CE893EC2A096B6700755167 /* Tasks */,
+				4CE893ED2A096B9400755167 /* Projects */,
+				4CE893EE2A0974F300755167 /* Tags */,
+				4CE893E82A095DD700755167 /* QuickActionView.swift */,
 				4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */,
 				4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */,
 				4CCB165E2A05215700FE5376 /* CompletedView.swift */,
-				4CCB16602A05216300FE5376 /* TaskView.swift */,
-				4CCB16622A05216900FE5376 /* TaskDetailsView.swift */,
-				4CCB16642A05217000FE5376 /* ProjectListView.swift */,
-				4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */,
-				4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */,
-				4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */,
-				4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */,
+				4CE893EA2A0963B300755167 /* SearchView.swift */,
 				4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */,
-				4CCB16662A05217600FE5376 /* TagsView.swift */,
+				4CD17BD82A06BB70005BA2E6 /* Core data */,
 				4CCB162E2A051F5000FE5376 /* Assets.xcassets */,
 				4CCB16382A051F5000FE5376 /* Info.plist */,
 				4CCB16302A051F5000FE5376 /* Preview Content */,
@@ -185,11 +184,42 @@
 		4CD17BD82A06BB70005BA2E6 /* Core data */ = {
 			isa = PBXGroup;
 			children = (
-				4CCB16332A051F5000FE5376 /* Persistence.swift */,
 				4CCB16352A051F5000FE5376 /* Next_Idea.xcdatamodeld */,
+				4CCB16332A051F5000FE5376 /* Persistence.swift */,
 				4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */,
+				4CCB162C2A051F4F00FE5376 /* ContentView.swift */,
 			);
 			path = "Core data";
+			sourceTree = "<group>";
+		};
+		4CE893EC2A096B6700755167 /* Tasks */ = {
+			isa = PBXGroup;
+			children = (
+				4CCB165C2A05214D00FE5376 /* ListView.swift */,
+				4CCB16602A05216300FE5376 /* TaskView.swift */,
+				4CCB16622A05216900FE5376 /* TaskDetailsView.swift */,
+			);
+			path = Tasks;
+			sourceTree = "<group>";
+		};
+		4CE893ED2A096B9400755167 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				4CCB16642A05217000FE5376 /* ProjectListView.swift */,
+				4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */,
+				4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */,
+				4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */,
+				4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */,
+			);
+			path = Projects;
+			sourceTree = "<group>";
+		};
+		4CE893EE2A0974F300755167 /* Tags */ = {
+			isa = PBXGroup;
+			children = (
+				4CE893EF2A09750400755167 /* TagsPickerView.swift */,
+			);
+			path = Tags;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -332,14 +362,16 @@
 				4CCB165D2A05214D00FE5376 /* ListView.swift in Sources */,
 				4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */,
 				4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */,
+				4CE893EB2A0963B300755167 /* SearchView.swift in Sources */,
 				4CD17BDC2A06C6AA005BA2E6 /* DueTodayView.swift in Sources */,
 				4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */,
 				4CCB165B2A05214100FE5376 /* HomeView.swift in Sources */,
 				4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */,
 				4CCB16372A051F5000FE5376 /* Next_Idea.xcdatamodeld in Sources */,
-				4CCB16672A05217600FE5376 /* TagsView.swift in Sources */,
 				4CCB16612A05216300FE5376 /* TaskView.swift in Sources */,
 				4CD17BD12A054F6D005BA2E6 /* ProjectView.swift in Sources */,
+				4CE893F02A09750400755167 /* TagsPickerView.swift in Sources */,
+				4CE893E92A095DD700755167 /* QuickActionView.swift in Sources */,
 				4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

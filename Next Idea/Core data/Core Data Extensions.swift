@@ -11,6 +11,15 @@ import SwiftUI
 
 extension Task {
     
+    func hasTag(tag: Tag) -> Bool { // returns true if the task has the specified tag
+        for tasktag in self.tags ?? [] {
+            if (tasktag as! Tag) == tag {
+                return true
+            }
+        }
+        return false
+    }
+    
     func createNotification() { // create a notification for this task at the date and time specified in the task, and save its id to the task
         let notificationId = UUID().uuidString
         let reminderDate: Date

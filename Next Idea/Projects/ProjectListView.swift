@@ -31,6 +31,7 @@ struct ProjectListView: View {
                 }
                 .onMove(perform: moveItem)
             }
+            .listStyle(PlainListStyle())
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {

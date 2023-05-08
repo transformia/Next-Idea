@@ -10,7 +10,25 @@ import SwiftUI
 struct TaskDetailsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
+//    @FetchRequest(
+//        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.id, ascending: true)],
+//        animation: .default)
+//    private var tags: FetchedResults<Tag> // to be able to display the tags that have been selected
+    
+    @FetchRequest private var tags: FetchedResults<Tag>
+    
     let task: Task
+    
+    init(task: Task) { // filter the tag list on the ones that contain the provided task
+        self.task = task
+        _tags = FetchRequest(
+            entity: Tag.entity(),
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \Tag.id, ascending: true)
+            ],
+            predicate: NSPredicate(format: "tasks CONTAINS %@", task)
+        )
+    }
     
     @Environment(\.dismiss) private var dismiss // used for dismissing this view
     
@@ -26,6 +44,8 @@ struct TaskDetailsView: View {
     @State private var recurring = false
     @State private var recurrence: Int16 = 1
     @State private var recurrenceType = "days"
+    
+    @State private var link = ""
     
     @State private var selectedProject: Project?
     
@@ -54,6 +74,7 @@ struct TaskDetailsView: View {
                         recurring = task.recurring
                         recurrence = task.recurrence
                         recurrenceType = task.recurrencetype ?? "days"
+                        link = task.link ?? ""
                         selectedProject = task.project
                     }
                     .onChange(of: name) { _ in
@@ -82,6 +103,23 @@ struct TaskDetailsView: View {
                     }
                     else {
                         Text("\(task.project?.name ?? "")")
+                    }
+                }
+                
+                NavigationLink {
+                    TagsPickerView(tasks: [task])
+                } label: {
+                    VStack {
+                        if task.tags == nil {
+                            Text("Tags")
+                        }
+                        else {
+                            HStack {
+                                ForEach(tags) { tag in
+                                    Text(tag.name ?? "")
+                                }
+                            }
+                        }
                     }
                 }
                 
@@ -146,6 +184,11 @@ struct TaskDetailsView: View {
                     Toggle("Hide until date", isOn: $hideUntilDate)
                 }
                 
+                TextField("Link", text: $link)
+                    .keyboardType(.URL)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                
                 Button(role: .destructive) {
                     showDeleteAlert = true
                 } label: {
@@ -199,6 +242,7 @@ struct TaskDetailsView: View {
                         task.recurring = recurring
                         task.recurrence = recurrence
                         task.recurrencetype = recurrenceType
+                        task.link = link
                         
                         task.modifieddate = Date()
                         PersistenceController.shared.save()

@@ -15,9 +15,29 @@ struct TaskView: View {
         animation: .default)
     private var tasks: FetchedResults<Task> // to be able to change the order of the task
     
+//    @FetchRequest(
+//        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.id, ascending: true)],
+//        animation: .default)
+//    private var tags: FetchedResults<Tag> // to be able to display the tags that have been selected
+    
+    @FetchRequest private var tags: FetchedResults<Tag>
+    
     let task: Task
     
+    init(task: Task) { // filter the tag list on the ones that contain the provided task
+        self.task = task
+        _tags = FetchRequest(
+            entity: Tag.entity(),
+            sortDescriptors: [
+                NSSortDescriptor(keyPath: \Tag.id, ascending: true)
+            ],
+            predicate: NSPredicate(format: "tasks CONTAINS %@", task)
+        )
+    }
+    
     @State private var name = ""
+    
+    @State private var editable = false // determines if the task is editable or not, i.e. whether it is a Text or a TextField -> having only TextFields leads to stuttering when scrolling through long lists
     
     @State private var dateColor: Color = .primary // color in which the due date and reminder date are displayed
     
@@ -28,28 +48,42 @@ struct TaskView: View {
     var body: some View {
         VStack(alignment: HorizontalAlignment.leading) {
             HStack {
-                TextField("", text: $name, axis: .vertical)
-                    .focused($focused)
-                    .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
-                    .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
-                    .onAppear {
-                        name = task.name ?? ""
-                        if name == "" {
-                            focused = true // focus on the task when it is created
+                if !editable {
+                    Text(task.name ?? "")
+                        .onAppear {
+                            if task.name == "" {
+                                editable = true // make it possible to edit new tasks when they are created
+                            }
                         }
-                    }
-                    .onChange(of: name) { _ in
-                        task.name = name // save the changes
-                        PersistenceController.shared.save()
-                        
-                        // If I press enter:
-                        if name.contains("\n") { // if a newline is found
-                            name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                            focused = false // close the keyboard
+                        .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
+                        .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
+                }
+                
+                else {
+                    TextField("", text: $name, axis: .vertical)
+                        .focused($focused)
+                        .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
+                        .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
+                        .onAppear {
+                            name = task.name ?? ""
+                            if name == "" {
+                                focused = true // focus on the task when it is created
+                            }
+                        }
+                        .onChange(of: name) { _ in
                             task.name = name // save the changes
                             PersistenceController.shared.save()
+                            
+                            // If I press enter:
+                            if name.contains("\n") { // if a newline is found
+                                name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
+                                focused = false // close the keyboard
+//                                editable = false // make the task into a Text again - or just leave it as a TextField until the next reload?
+                                task.name = name // save the changes
+                                PersistenceController.shared.save()
+                            }
                         }
-                    }
+                }
                 
                 if focused || task.selected { // if I'm editing the task name, or have selected it, show a button to open the task details
                     Label("Task details", systemImage: "info.circle")
@@ -64,52 +98,71 @@ struct TaskView: View {
 //                Text("\(task.order)")
             }
             
-            if task.dateactive {
-                HStack {
-                    duedatetimeText
-                        .padding(.trailing, -5) // so the space isn't too large between the due date and the recurrence
-                    if(task.recurring) {
-                        if task.recurrence == 1 {
-                            switch(task.recurrencetype) {
-                            case "days":
-                                Text("- daily")
+            HStack { // Contains the date and the tags
+                
+                // If the task has a date, display it:
+                if task.dateactive {
+                    HStack {
+                        duedatetimeText
+                            .padding(.trailing, -5) // so the space isn't too large between the due date and the recurrence
+                        if(task.recurring) {
+                            if task.recurrence == 1 {
+                                switch(task.recurrencetype) {
+                                case "days":
+                                    Text("- daily")
+                                        .foregroundColor(dateColor)
+                                        .font(.footnote)
+                                case "weeks":
+                                    Text("- weekly")
+                                        .foregroundColor(dateColor)
+                                        .font(.footnote)
+                                case "months":
+                                    Text("- monthly")
+                                        .foregroundColor(dateColor)
+                                        .font(.footnote)
+                                case "years":
+                                    Text("- yearly")
+                                        .foregroundColor(dateColor)
+                                        .font(.footnote)
+                                default:
+                                    Text("")
+                                }
+                            }
+                            else {
+                                Text("- every \(task.recurrence) ")
                                     .foregroundColor(dateColor)
                                     .font(.footnote)
-                            case "weeks":
-                                Text("- weekly")
+                                + Text(task.recurrencetype ?? "days")
                                     .foregroundColor(dateColor)
                                     .font(.footnote)
-                            case "months":
-                                Text("- monthly")
-                                    .foregroundColor(dateColor)
-                                    .font(.footnote)
-                            case "years":
-                                Text("- yearly")
-                                    .foregroundColor(dateColor)
-                                    .font(.footnote)
-                            default:
-                                Text("")
                             }
                         }
-                        else {
-                            Text("- every \(task.recurrence) ")
-                                .foregroundColor(dateColor)
-                                .font(.footnote)
-                            + Text(task.recurrencetype ?? "days")
-                                .foregroundColor(dateColor)
+                    }
+                    .onAppear {
+                        setDateColor(task: task) // color the date depending on when it is
+                    }
+                    .onChange(of: task.date) { _ in
+                        setDateColor(task: task) // color the date depending on when it is
+                    }
+                    
+                    Spacer()
+                }
+                
+                // If the task has tags, display them:
+                if task.tags != nil {
+                    
+                    Spacer()
+                    HStack {
+                        ForEach(tags) { tag in
+                            Text("\(tag.name ?? "")")
                                 .font(.footnote)
                         }
                     }
                 }
-                .onAppear {
-                    setDateColor(task: task) // color the date depending on when it is
-                }
-                .onChange(of: task.date) { _ in
-                    setDateColor(task: task) // color the date depending on when it is
-                }
             }
         }
         .onTapGesture { // make the whole VStack tappable for editing the task name
+            editable = true
             focused = true
         }
         .swipeActions(edge: .leading) {
@@ -166,6 +219,7 @@ struct TaskView: View {
             
             Button { // select this task
                 task.selected.toggle()
+                PersistenceController.shared.save()
             } label: {
                 Label("Select", systemImage: "pin.circle")
             }

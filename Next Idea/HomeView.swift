@@ -25,7 +25,7 @@ struct HomeView: View {
                 }
                 
                 NavigationLink {
-                    TagsView()
+                    TagsPickerView(tasks: [])
                 } label: {
                     Text("Tags")
                 }
@@ -34,6 +34,12 @@ struct HomeView: View {
                     WaitingForView()
                 } label: {
                     Text("Waiting for")
+                }
+                
+                NavigationLink {
+                    SearchView()
+                } label: {
+                    Text("Search")
                 }
                 
                 NavigationLink {
