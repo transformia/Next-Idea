@@ -38,7 +38,7 @@ struct TaskDetailsView: View {
     let lists = [(Int16(0), "Inbox"), (Int16(1), "Now"), (Int16(2), "Next"), (Int16(3), "Someday")]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 TextField("", text: $name, axis: .vertical)
                     .focused($focused)
@@ -75,7 +75,7 @@ struct TaskDetailsView: View {
                 }
                 
                 NavigationLink {
-                    ProjectPicker(tasks: [task])
+                    ProjectPickerView(tasks: [task])
                 } label: {
                     if selectedProject == nil {
                         Text("Project")
@@ -89,8 +89,17 @@ struct TaskDetailsView: View {
                 
                 HStack {
                     Toggle("Date", isOn: $dateActive)
+                        .onChange(of: dateActive) { _ in // if I deactivate the date, deactivate the reminder too
+                            if !dateActive {
+                                reminderActive = false
+                            }
+                        }
                     Toggle("Reminder", isOn: $reminderActive)
-                        .disabled(!dateActive)
+                        .onChange(of: reminderActive) { _ in // if I activate the reminder, activate the date too
+                            if reminderActive {
+                                dateActive = true
+                            }
+                        }
                 }
                 if dateActive {
                     
@@ -175,13 +184,22 @@ struct TaskDetailsView: View {
                         task.note = note
                         task.dateactive = dateActive
                         task.reminderactive = reminderActive
-                        task.date = date
+                        
+                        // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
+                        if task.date != date {
+                            task.date = date
+                            task.cancelNotification()
+                            if reminderActive {
+                                task.createNotification()
+                            }
+                        }
                         task.hideuntildate = hideUntilDate
                         task.waitingfor = waitingFor
                         task.list = list
                         task.recurring = recurring
                         task.recurrence = recurrence
                         task.recurrencetype = recurrenceType
+                        
                         task.modifieddate = Date()
                         PersistenceController.shared.save()
                         dismiss() // dismiss the sheet
@@ -191,7 +209,7 @@ struct TaskDetailsView: View {
                 }
             }
         }
-        .interactiveDismissDisabled(task.name != name || task.note != note || task.dateactive != dateActive || task.reminderactive != reminderActive || task.date != date || task.hideuntildate != hideUntilDate || task.waitingfor != waitingFor || task.list != list || task.recurring != recurring || task.recurrence != recurrence || task.recurrencetype != recurrenceType) // prevent accidental dismissal of the sheet if any value has been modified (except the project, because that is modified in the project picker, but not saved -> could be an issue)
+        .interactiveDismissDisabled(task.name != name || task.note != note || task.dateactive != dateActive || task.reminderactive != reminderActive || (task.date != date && task.date != nil) || task.hideuntildate != hideUntilDate || task.waitingfor != waitingFor || task.list != list || task.recurring != recurring || task.recurrence != recurrence || task.recurrencetype != recurrenceType) // prevent accidental dismissal of the sheet if any value has been modified (except the project, because that is modified in the project picker, but not saved -> could be an issue). I'm only disabling dismiss based on the date if task.date is not nil, otherwise it will always get stuck on new tasks
     }
 }
 

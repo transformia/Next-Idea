@@ -19,339 +19,224 @@ struct ListView: View {
     
     @State var showDeferred: Bool // determines whether deferred items are shown or not. Can be set when calling the function
     
-    @State private var selectMultipleTasks = false
-    @State private var selectedTasks: [Task] = []
     @State private var showProjectPicker = false
     @State private var showDatePicker = false
-    @State private var showDateTimePicker = false
-    @State private var showListPicker = false
-    
-    @State private var date = Date()
-    @State private var selectedList: Int16 = 0
     
     // Define lists:
     let lists = [(Int16(0), "Inbox"), (Int16(1), "Now"), (Int16(2), "Next"), (Int16(3), "Someday")]
     
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .bottom) {
-                
-                List {
-                    ForEach(tasks.filter({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date()) })) { task in // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task
-                        HStack {
-                            if selectMultipleTasks {
-                                Image(systemName: selectedTasks.contains(task) ? "circle.fill" : "circle")
-                                    .onTapGesture {
-                                        if selectedTasks.contains(task) {
-                                            selectedTasks = selectedTasks.filter({$0 != task})
-                                        }
-                                        else {
-                                            selectedTasks.append(task)
-                                        }
-                                    }
-                            }
-                            TaskView(task: task)
-                        }
-                    }
-                    .onMove(perform: moveItem)
-                }
-                
-                if tasks.filter({$0.list == list && !$0.completed && $0.ticked}).count > 0 { // if there are ticked tasks displayed, show a button to hide them
-                    Button {
-                        for task in tasks {
-                            if task.ticked {
-                                task.completed = true
-                            }
-                        }
-                        PersistenceController.shared.save()
-                    } label: {
-                        Text("Clear completed tasks")
-                    }
-                    .padding(.bottom, 60)
-                }
-                
-                // Date picker:
-                if showDatePicker {
-                    HStack {
-                        
-                        Spacer()
-                        Spacer()
-                        
-                        Button { // remove the date and reminder
-                            for task in selectedTasks {
-                                task.dateactive = false
-                                task.reminderactive = false
-//                                task.date = Date()
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showDatePicker = false
-                        } label: {
-                            Image(systemName: "xmark")
-                                .foregroundColor(.red)
-                                .frame(width: 20, height: 20)
-                        }
-                        
-                        Spacer()
-                        
-                        DatePicker("", selection: $date, displayedComponents: .date)
-                            .frame(width: 120)
-                        
-                        Spacer()
-                        
-                        Button { // save the date
-                            for task in selectedTasks {
-                                task.dateactive = true
-                                task.reminderactive = false
-                                task.date = date
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showDatePicker = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                                .frame(width: 20, height: 20)
-                        }
-                        
-                        Spacer()
-                        Spacer()
-                    }
-                    .padding(.bottom, 120)
-                }
-                
-                // Date time picker:
-                else if showDateTimePicker {
-                    HStack {
-                        
-                        Spacer()
-                        Spacer()
-                        
-                        Button { // remove the date and reminder
-                            for task in selectedTasks {
-                                task.dateactive = false
-                                task.reminderactive = false
-//                                task.date = Date()
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showDateTimePicker = false
-                        } label: {
-                            Image(systemName: "xmark")
-                                .foregroundColor(.red)
-                                .frame(width: 20, height: 20)
-                        }
-                        
-                        Spacer()
-                        
-                        DatePicker("", selection: $date, displayedComponents: [.date, .hourAndMinute])
-                            .frame(width: 200)
-                        
-                        Spacer()
-                        
-                        Button {
-                            for task in selectedTasks {
-                                task.dateactive = true
-                                task.reminderactive = true
-                                task.date = date
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showDateTimePicker = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                                .frame(width: 20, height: 20)
-                        }
-                        
-                        Spacer()
-                        Spacer()
-                    }
-                    .padding(.bottom, 120)
+        NavigationStack {
+            VStack {
+                ZStack(alignment: .bottom) {
                     
-                }
-                
-                else if selectMultipleTasks && selectedTasks.count > 0 { // show icons to move the tasks to other lists if the multiple selection is active and at least one task is selected
-                    HStack {
+                    List {
                         
-//                        Spacer()
-                        
-                        Button {
-                            for task in selectedTasks {
-                                task.list = 0
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
+                        // Only in the Now list: show the number of tasks due today in other lists, if there are any, and link to the list of them:
+                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
+                            NavigationLink {
+                                DueTodayView()
+                            } label: {
+                                HStack {
+                                    Spacer()
+                                    Text("Other due and overdue tasks") // count of uncompleted tasks due today and overdue
+                                    Spacer()
+                                    Text("\(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
+                                }
+                                .foregroundColor(.blue)
                             }
-                            showListPicker = false
-                            selectMultipleTasks = false
-                            selectedTasks = [] // clear the array of selected tasks
-                        } label: {
-                            Image(systemName: "tray")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
+                            .swipeActions {
+                                Button { // move all of the due tasks to the bottom of Now
+                                    
+                                    for task in tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}) {
+                                        task.order = (tasks.filter({$0.list == 1 && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
+                                        task.list = 1
+                                        task.modifieddate = Date()
+                                    }
+                                    
+                                    PersistenceController.shared.save() // save the changes
+                                } label: {
+                                    Label("Move to Now", systemImage: "scope")
+                                }
+                                .tint(.green)
+                            }
                         }
                         
-//                        Spacer()
+                        // Show the tasks:
                         
-                        Button {
-                            for task in selectedTasks {
-                                task.list = 1
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
+                        // NOTE: IF I MODIFY THIS FILTER, I HAVE TO MODIFY IT IN MOVEITEM TOO! Otherwise dragging tasks will not work anymore
+                        ForEach(tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })  ) { task in // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task. If the task has no project, or its project is set up to display all tasks, or just the first task and this is the first non-completed task of the project, display the task
+                            HStack {
+                                if tasks.filter({$0.selected}).count > 0 {
+                                    //                                    Image(systemName: task.selected ? "pin.fill" : "pin.slash.fill")
+                                    Image(systemName: task.selected ? "circle.fill" : "circle")
+                                        .foregroundColor(task.selected ? .teal : nil)
+                                        .onTapGesture {
+                                            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                                            impactMed.impactOccurred() // haptic feedback
+                                            
+                                            task.selected.toggle()
+                                        }
+                                }
+                                
+                                if task.project == nil { // if the task has no project, just show the task
+                                    TaskView(task: task)
+                                }
+                                
+                                else { // else if the task has a project, show the task as a navigation link to the project tasks
+                                    NavigationLink {
+                                        ProjectTaskView(project: task.project ?? Project())
+                                    } label: {
+                                        TaskView(task:task)
+                                        Image(systemName: "book.fill")
+                                            .resizable()
+                                            .frame(width: 12, height: 12)
+                                    }
+                                }
                             }
-                            showListPicker = false
-                            selectMultipleTasks = false
-                            selectedTasks = [] // clear the array of selected tasks
-                        } label: {
-                            Image(systemName: "scope")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
                         }
-                        
-//                        Spacer()
-                        
-                        Button {
-                            for task in selectedTasks {
-                                task.list = 2
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showListPicker = false
-                            selectMultipleTasks = false
-                            selectedTasks = [] // clear the array of selected tasks
-                        } label: {
-                            Image(systemName: "terminal.fill")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
-                        }
-                        
-//                        Spacer()
-                        
-                        Button {
-                            for task in selectedTasks {
-                                task.list = 3
-                                task.modifieddate = Date()
-                                PersistenceController.shared.save()
-                            }
-                            showListPicker = false
-                            selectMultipleTasks = false
-                            selectedTasks = [] // clear the array of selected tasks
-                        } label: {
-                            Image(systemName: "text.append")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
-                        }
-                        
-//                        Spacer()
-                        
-//                        Picker("List", selection: $selectedList) {
-//                            ForEach(lists, id: \.self.0) {
-//                                Text($0.1)
-//                                    .tag($0.0)
-//                            }
-//                        }
-//                        .onAppear {
-//                            selectedList = list
-//                        }
-//                        Button {
-//                            for task in selectedTasks {
-//                                task.list = selectedList
-//                                task.modifieddate = Date()
-//                                PersistenceController.shared.save()
-//                            }
-//                            showListPicker = false
-//                            selectMultipleTasks = false
-//                            selectedTasks = [] // clear the array of selected tasks
-//                        } label: {
-//                            Image(systemName: "checkmark")
-//                        }
+                        .onMove(perform: moveItem)
                     }
-                    .padding(.bottom, 120)
-                }
-                
-                // Multiple selection actions:
-                if selectMultipleTasks && selectedTasks.count > 0 {
-                    HStack {
-                        
+                    
+                    if tasks.filter({$0.list == list && !$0.completed && $0.ticked}).count > 0 { // if there are ticked tasks displayed, show a button to mark them as complete, and therefore hide them
                         Button {
-                            showDatePicker.toggle()
-                            showDateTimePicker = false
-                            showListPicker = false
+                            for task in tasks {
+                                if task.ticked {
+                                    task.completed = true
+                                }
+                            }
+                            PersistenceController.shared.save()
                         } label: {
-                            Image(systemName: "calendar")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
+                            Text("Clear completed tasks")
                         }
-                        
-                        
-                        Button {
-                            showDateTimePicker.toggle()
-                            showDatePicker = false
-                            showListPicker = false
-                        } label: {
-                            Image(systemName: "calendar.badge.clock")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
-                        }
-                        
-                        
-//                        Button {
-//                            showListPicker.toggle()
-//                            showDatePicker = false
-//                            showDateTimePicker = false
-//                        } label: {
-//                            Image(systemName: "list.bullet")
-//                                .resizable()
-//                                .frame(width: 26, height: 26)
-//                                .foregroundColor(.white)
-//                                .padding(10)
-//                        }
-                        
-                        Button {
-                            showProjectPicker = true
-                            showListPicker = false
-                            showDatePicker = false
-                            showDateTimePicker = false
-                        } label: {
-                            Image(systemName: "book.fill")
-                                .resizable()
-                                .frame(width: 26, height: 26)
-                                .foregroundColor(.white)
-                                .padding(10)
-                        }
-                        .sheet(isPresented: $showProjectPicker) {
-                            ProjectPicker(tasks: selectedTasks)
-                        }
+                        .padding(.bottom, 60)
                     }
-                    .padding(.bottom, 60)
+                    
+                    // Add task buttons:
+                    HStack {
+                        addTaskTopButton
+                        addTaskBottomButton
+                    }
                 }
                 
-                // Add task buttons:
-                HStack {
-                    addTaskTopButton
-                    addTaskBottomButton
+                
+                // Second element of the VStack: Quick action buttons:
+                
+                if tasks.filter({$0.selected}).count > 0 { // show icons to move the tasks to other lists if at least one task is selected
+                    VStack {
+                        HStack {
+                            
+                            // Quick actions to move tasks to other lists:
+                            Button {
+                                for task in tasks.filter({$0.selected}) {
+                                    task.list = 0
+                                    task.modifieddate = Date()
+                                }
+                                PersistenceController.shared.save()
+                                deselectAllTasks()
+                            } label: {
+                                Image(systemName: "tray")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                            
+                            Button {
+                                for task in tasks.filter({$0.selected}) {
+                                    task.list = 1
+                                    task.modifieddate = Date()
+                                }
+                                PersistenceController.shared.save()
+                                deselectAllTasks()
+                            } label: {
+                                Image(systemName: "scope")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                            
+                            Button {
+                                for task in tasks.filter({$0.selected}) {
+                                    task.list = 2
+                                    task.modifieddate = Date()
+                                }
+                                PersistenceController.shared.save()
+                                deselectAllTasks()
+                            } label: {
+                                Image(systemName: "terminal.fill")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                            
+                            Button {
+                                for task in tasks.filter({$0.selected}) {
+                                    task.list = 3
+                                    task.modifieddate = Date()
+                                }
+                                PersistenceController.shared.save()
+                                deselectAllTasks()
+                            } label: {
+                                Image(systemName: "text.append")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                        }
+//                        .padding(.bottom, 120)
+                        
+                        // Quick actions to change date and project:
+                        HStack {
+                            
+                            // Show date picker:
+                            Button {
+                                showDatePicker = true
+                            } label: {
+                                Image(systemName: "calendar")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                            
+                            Button {
+                                showProjectPicker = true
+                            } label: {
+                                Image(systemName: "book.fill")
+                                    .resizable()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                            }
+                            .sheet(isPresented: $showProjectPicker) {
+                                ProjectPickerView(tasks: tasks.filter({$0.selected}))
+                            }
+                            .sheet(isPresented: $showDatePicker) {
+                                DatePickerView(tasks: tasks.filter({$0.selected}))
+                                    .presentationDetents([.height(500)])
+                            }
+                        }
+//                        .padding(.bottom, 60)
+                    }
+//                    .frame(height: 100)
+                    .background(.black)
                 }
+                
+                
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     HStack {
-                        Button {
-                            selectMultipleTasks.toggle()
-                            if !selectMultipleTasks {
-                                selectedTasks = [] // clear the array of selected tasks
+                        if tasks.filter({$0.selected}).count > 0 {
+                            Button {
+                                deselectAllTasks()
+                            } label: {
+                                Label("", systemImage: "pip.remove")
                             }
-                        } label: {
-                            Label("", systemImage: selectMultipleTasks ? "filemenu.and.selection" : "filemenu.and.cursorarrow")
                         }
                     }
                 }
@@ -379,35 +264,48 @@ struct ListView: View {
         }
     }
     
+    private func deselectAllTasks() {
+        for task in tasks {
+            if task.selected {
+                task.selected = false
+            }
+        }
+    }
+    
     private func moveItem(at sets:IndexSet, destination: Int) {
         let itemToMove = sets.first!
         
         // If the item is moving down:
         if itemToMove < destination {
+//            print(itemToMove)
+//            print(destination)
             var startIndex = itemToMove + 1
             let endIndex = destination - 1
-            var startOrder = tasks.filter({$0.list == list && !$0.completed})[itemToMove].order
+//            print(startIndex)
+//            print(endIndex)
+            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order
+//            print(startOrder)
             // Change the order of all tasks between the task to move and the destination:
             while startIndex <= endIndex {
-                tasks.filter({$0.list == list && !$0.completed})[startIndex].order = startOrder
+                tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter({$0.list == list && !$0.completed})[itemToMove].order = startOrder // set the moved task's order to its final value
+            tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order = startOrder // set the moved task's order to its final value
         }
         
         // Else if the item is moving up:
         else if itemToMove > destination {
             var startIndex = destination
             let endIndex = itemToMove - 1
-            var startOrder = tasks.filter({$0.list == list && !$0.completed})[destination].order + 1
-            let newOrder = tasks.filter({$0.list == list && !$0.completed})[destination].order
+            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[destination].order + 1
+            let newOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[destination].order
             while startIndex <= endIndex {
-                tasks.filter({$0.list == list && !$0.completed})[startIndex].order = startOrder
+                tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter({$0.list == list && !$0.completed})[itemToMove].order = newOrder // set the moved task's order to its final value
+            tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order = newOrder // set the moved task's order to its final value
         }
         
         PersistenceController.shared.save() // save the item

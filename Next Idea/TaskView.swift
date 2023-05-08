@@ -30,7 +30,7 @@ struct TaskView: View {
             HStack {
                 TextField("", text: $name, axis: .vertical)
                     .focused($focused)
-                    .foregroundColor(task.ticked && !task.completed ? .gray : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view
+                    .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
                     .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                     .onAppear {
                         name = task.name ?? ""
@@ -51,7 +51,7 @@ struct TaskView: View {
                         }
                     }
                 
-                if focused {
+                if focused || task.selected { // if I'm editing the task name, or have selected it, show a button to open the task details
                     Label("Task details", systemImage: "info.circle")
                         .labelStyle(.iconOnly)
                         .foregroundColor(.cyan)
@@ -113,7 +113,8 @@ struct TaskView: View {
             focused = true
         }
         .swipeActions(edge: .leading) {
-            Button { // tick this item if it is not recurring, otherwise increment its date
+            
+            Button { // tick this task if it is not recurring, otherwise increment its date
                 if !task.recurring {
                     task.ticked.toggle()
                     if !task.ticked { // if I'm uncompleting a task, mark it as not complete after a short while
@@ -140,16 +141,43 @@ struct TaskView: View {
                 Label("Complete", systemImage: "checkmark")
             }
             .tint(.green)
+            
+            // Move the task to the top or to the bottom:
+            
+            Button {
+                task.order = (tasks.filter({$0.list == task.list && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                PersistenceController.shared.save() // save the item
+            } label: {
+                Label("Move to top", systemImage: "arrow.up")
+            }
+            .tint(.blue)
+            
+            Button {
+                task.order = (tasks.filter({$0.list == task.list && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
+                PersistenceController.shared.save() // save the item
+            } label: {
+                Label("Move to bottom", systemImage: "arrow.down")
+            }
+            .tint(.orange)
+            
+            
         }
         .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
             
-            // Edit the task details:
-            Button {
-                showTaskDetails = true
+            Button { // select this task
+                task.selected.toggle()
             } label: {
-                Label("Details", systemImage: "info.circle")
+                Label("Select", systemImage: "pin.circle")
             }
-            .tint(.cyan)
+            .tint(.teal)
+            
+//            // Edit the task details:
+//            Button {
+//                showTaskDetails = true
+//            } label: {
+//                Label("Details", systemImage: "info.circle")
+//            }
+//            .tint(.cyan)
             
             if task.list != 1 {
                 // Move the task to Now:
@@ -201,7 +229,6 @@ struct TaskView: View {
                 }
                 .tint(.gray)
             }
-            
         }
         .sheet(isPresented: $showTaskDetails) {
             TaskDetailsView(task: task)

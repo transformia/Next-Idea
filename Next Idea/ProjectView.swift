@@ -12,7 +12,7 @@ struct ProjectView: View {
     
     let project: Project
     
-    @State private var name = ""
+//    @State private var name = ""
     
     @State private var showProjectDetails = false
     
@@ -20,36 +20,37 @@ struct ProjectView: View {
     
     var body: some View {
         HStack {
-            TextField("", text: $name, axis: .vertical)
-                .focused($focused)
-                .onAppear {
-                    name = project.name ?? ""
-                    if name == "" {
-                        focused = true // focus on the project when it is created
-                    }
-                }
-                .onChange(of: name) { _ in
-                    project.name = name // save the changes
-                    PersistenceController.shared.save()
-                    
-                    // If I press enter:
-                    if name.contains("\n") { // if a newline is found
-                        name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                        focused = false // close the keyboard
-                        project.name = name // save the changes
-                        PersistenceController.shared.save()
-                    }
-                }
+//            TextField("", text: $name, axis: .vertical)
+//                .focused($focused)
+            Text(project.name ?? "")
+//                .onAppear {
+//                    name = project.name ?? ""
+//                    if name == "" {
+//                        focused = true // focus on the project when it is created
+//                    }
+//                }
+//                .onChange(of: name) { _ in
+//                    project.name = name // save the changes
+//                    PersistenceController.shared.save()
+//
+//                    // If I press enter:
+//                    if name.contains("\n") { // if a newline is found
+//                        name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
+//                        focused = false // close the keyboard
+//                        project.name = name // save the changes
+//                        PersistenceController.shared.save()
+//                    }
+//                }
             
-            if focused {
-                Label("Project details", systemImage: "info.circle")
-                    .labelStyle(.iconOnly)
-                    .foregroundColor(.cyan)
-                    .onTapGesture {
-                        focused = false
-                        showProjectDetails = true
-                    }
-            }
+//            if focused {
+//                Label("Project details", systemImage: "info.circle")
+//                    .labelStyle(.iconOnly)
+//                    .foregroundColor(.cyan)
+//                    .onTapGesture {
+//                        focused = false
+//                        showProjectDetails = true
+//                    }
+//            }
         }
         .swipeActions(edge: .trailing) {
             // Edit the project details:

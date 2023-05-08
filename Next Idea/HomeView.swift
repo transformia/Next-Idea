@@ -9,28 +9,39 @@ import SwiftUI
 
 struct HomeView: View {
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
+                
+                NavigationLink {
+                    DueTodayView()
+                } label: {
+                    Text("Due and overdue")
+                }
+                
                 NavigationLink {
                     ProjectListView()
                 } label: {
                     Text("Projects")
                 }
+                
                 NavigationLink {
                     TagsView()
                 } label: {
                     Text("Tags")
                 }
+                
                 NavigationLink {
                     WaitingForView()
                 } label: {
                     Text("Waiting for")
                 }
+                
                 NavigationLink {
                     CompletedView()
                 } label: {
                     Text("Completed tasks")
                 }
+                
             }
         }
     }

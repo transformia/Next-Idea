@@ -15,6 +15,9 @@ struct ProjectListView: View {
         animation: .default)
     private var projects: FetchedResults<Project>
     
+    @State private var showProjectDetailsView = false
+    
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             
@@ -41,6 +44,9 @@ struct ProjectListView: View {
             HStack {
                 addProjectButton
             }
+        }
+        .sheet(isPresented: $showProjectDetailsView) {
+            ProjectDetailsView(project: nil)
         }
     }
     
@@ -82,13 +88,16 @@ struct ProjectListView: View {
         Button {
             let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
             impactMed.impactOccurred() // haptic feedback
-            // Create a new project at the top:
-            let project = Project(context: viewContext)
-            project.id = UUID()
-            project.order = (projects.first?.order ?? 0) - 1
-            project.name = ""
-            project.createddate = Date()
-            PersistenceController.shared.save()
+            // Open the project details view:
+            showProjectDetailsView = true
+//            // Create a new project at the top:
+//            let project = Project(context: viewContext)
+//            project.id = UUID()
+//            project.order = (projects.first?.order ?? 0) - 1
+//            project.name = ""
+//            project.displayoption = "All"
+//            project.createddate = Date()
+//            PersistenceController.shared.save()
         } label: {
             Image(systemName: "plus")
                 .resizable()

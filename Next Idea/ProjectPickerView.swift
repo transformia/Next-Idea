@@ -1,5 +1,5 @@
 //
-//  ProjectPicker.swift
+//  ProjectPickerView.swift
 //  Next Idea
 //
 //  Created by Michael Frisk on 2023-05-05.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ProjectPicker: View {
+struct ProjectPickerView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
@@ -22,10 +22,11 @@ struct ProjectPicker: View {
     var body: some View {
         List {
             ForEach(projects.filter({!$0.completed})) { project in
-                ProjectView(project: project)
+//                ProjectView(project: project)
+                Text(project.name ?? "")
                     .onTapGesture {
-//                        print("Selecting project \(project.name ?? "") for task \(task.name ?? "")")
                         for task in tasks {
+//                            print("Linking task \(task.name ?? "") to project \(project.name ?? "")")
                             task.project = project
                             task.modifieddate = Date()
                             PersistenceController.shared.save()
@@ -37,8 +38,8 @@ struct ProjectPicker: View {
     }
 }
 
-struct ProjectPicker_Previews: PreviewProvider {
+struct ProjectPickerView_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectPicker(tasks: [])
+        ProjectPickerView(tasks: [])
     }
 }
