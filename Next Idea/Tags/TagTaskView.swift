@@ -1,44 +1,36 @@
 //
-//  ProjectTaskView.swift
+//  TagTaskView.swift
 //  Next Idea
 //
-//  Created by Michael Frisk on 2023-05-05.
+//  Created by Michael Frisk on 2023-05-17.
 //
 
 import SwiftUI
 
-struct ProjectTaskView: View {
+struct TagTaskView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    
-//    @FetchRequest(
-//        sortDescriptors: [NSSortDescriptor(keyPath: \Task.list, ascending: true), NSSortDescriptor(keyPath: \Task.order, ascending: true)],
-//        animation: .default) // tasks sorted by order, then by list
-//    private var tasks: FetchedResults<Task>
     
     @FetchRequest private var tasks: FetchedResults<Task>
     
-    @EnvironmentObject var tab: Tab
-//    @FetchRequest var tasks: FetchedResults<Task>
+    let tag: Tag
     
-    let project: Project
-    
-    init(project: Project) { // filter the task list on the ones linked to the provided project
-        self.project = project
+    init(tag: Tag) { // filter the task list on the ones linked to the provided tag
+        self.tag = tag
         _tasks = FetchRequest(
             entity: Task.entity(),
             sortDescriptors: [
                 NSSortDescriptor(keyPath: \Task.list, ascending: true),
                 NSSortDescriptor(keyPath: \Task.order, ascending: true) // tasks sorted by order, then by list
             ],
-            predicate: NSPredicate(format: "project == %@", project)
+            predicate: NSPredicate(format: "tags contains %@", tag)
         )
     }
     
     @State private var showSearchView = false
     
     var body: some View {
-        VStack { // Contains project name, ZStack and Quick action buttons
-            Text(project.name ?? "")
+        VStack { // Contains tag name, ZStack and Quick action buttons
+            Text(tag.name ?? "")
                 .font(.headline)
             
             ZStack(alignment: .bottom) { // Contains task list and Add task buttons
@@ -72,7 +64,7 @@ struct ProjectTaskView: View {
 //                                    .onTapGesture {
 //                                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
 //                                        impactMed.impactOccurred() // haptic feedback
-//
+//                                        
 //                                        task.selected.toggle()
 //                                        PersistenceController.shared.save()
 //                                    }
@@ -100,38 +92,37 @@ struct ProjectTaskView: View {
                 // Add task buttons:
                 HStack {
                     addTaskTopButton
-                    addTaskToInbox
                     addTaskBottomButton
+                }
+            }
+            .sheet(isPresented: $showSearchView) {
+                SearchView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack {
+                        if tasks.filter({$0.selected}).count > 0 {
+                            Button {
+                                deselectAllTasks()
+                            } label: {
+                                Label("", systemImage: "pip.remove")
+                            }
+                        }
+                        
+                        Button {
+                            showSearchView.toggle()
+                        } label: {
+                            Label("", systemImage: "magnifyingglass")
+                        }
+                    }
                 }
             }
             
             QuickActionView()
             
         }
-        .sheet(isPresented: $showSearchView) {
-            SearchView()
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack {
-                    if tasks.filter({$0.selected}).count > 0 {
-                        Button {
-                            deselectAllTasks()
-                        } label: {
-                            Label("", systemImage: "pip.remove")
-                        }
-                    }
-                    
-                    Button {
-                        showSearchView.toggle()
-                    } label: {
-                        Label("", systemImage: "magnifyingglass")
-                    }
-                }
-            }
-        }
     }
-        
+    
     private func deselectAllTasks() {
         for task in tasks {
             if task.selected {
@@ -151,38 +142,11 @@ struct ProjectTaskView: View {
             task.order = (tasks.filter({$0.list == 2}).first?.order ?? 0) - 1 // set the order to the order of the first item in the default list, minus one
             task.list = 2 // Next list by default
             task.name = ""
-            task.project = project
+            tag.addToTasks(task)
             task.createddate = Date()
             PersistenceController.shared.save()
         } label: {
             Image(systemName: "arrow.up")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskToInbox: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            
-            tab.selection = 0
-            
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.last?.order ?? 0) + 1
-            task.list = 0
-            task.name = ""
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "tray")
                 .resizable()
                 .frame(width: 14, height: 14)
                 .foregroundColor(.white)
@@ -203,7 +167,7 @@ struct ProjectTaskView: View {
             task.order = (tasks.filter({$0.list == 2}).last?.order ?? 0) + 1  // set the order to the order of the last item in the default list, plus one
             task.list = 2 // Next list by default
             task.name = ""
-            task.project = project
+            tag.addToTasks(task)
             task.createddate = Date()
             PersistenceController.shared.save()
         } label: {
@@ -219,8 +183,8 @@ struct ProjectTaskView: View {
     }
 }
 
-struct ProjectTaskView_Previews: PreviewProvider {
+struct TagTaskView_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectTaskView(project: Project())
+        TagTaskView(tag: Tag())
     }
 }

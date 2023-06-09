@@ -13,6 +13,12 @@ struct HomeView: View {
             List {
                 
                 NavigationLink {
+                    SettingsView()
+                } label: {
+                    Text("Settings")
+                }
+                
+                NavigationLink {
                     DueTodayView()
                 } label: {
                     Text("Due and overdue")
@@ -25,7 +31,7 @@ struct HomeView: View {
                 }
                 
                 NavigationLink {
-                    TagsPickerView(tasks: [])
+                    TagListView()
                 } label: {
                     Text("Tags")
                 }

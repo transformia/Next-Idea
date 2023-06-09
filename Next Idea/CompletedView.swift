@@ -11,7 +11,7 @@ struct CompletedView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Task.order, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Task.modifieddate, ascending: false)],
         animation: .default)
     private var tasks: FetchedResults<Task>
     
@@ -24,19 +24,29 @@ struct CompletedView: View {
                 }
             }
             
-            if tasks.filter({$0.completed}).count > 0 {
+            if tasks.filter({$0.completed && $0.modifieddate ?? Date() < Calendar.current.date(byAdding: .month, value: -1, to: Date())!}).count > 0 {
                 Button {
-                    for task in tasks {
-                        if task.completed {
-                            viewContext.delete(task)
-                        }
+                    for task in tasks.filter({$0.completed && $0.modifieddate ?? Date() < Calendar.current.date(byAdding: .month, value: -1, to: Date())!}) {
+                        viewContext.delete(task)
                     }
                     PersistenceController.shared.save()
                 } label: {
-                    Text("Delete completed tasks")
+                    Text("Delete completed tasks older than 1 month")
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, 40)
             }
+            
+//            if tasks.filter({$0.completed}).count > 0 {
+//                Button {
+//                    for task in tasks.filter({$0.completed}) {
+//                        viewContext.delete(task)
+//                    }
+//                    PersistenceController.shared.save()
+//                } label: {
+//                    Text("Delete all completed tasks")
+//                }
+//                .padding(.bottom, 20)
+//            }
         }
         .navigationTitle("Completed tasks")
         .navigationBarTitleDisplayMode(.inline)

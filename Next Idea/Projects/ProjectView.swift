@@ -10,6 +10,11 @@ import SwiftUI
 struct ProjectView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Task.order, ascending: true)],
+        animation: .default)
+    private var tasks: FetchedResults<Task> // to be able to count the tasks in each project
+    
     let project: Project
     
 //    @State private var name = ""
@@ -23,6 +28,8 @@ struct ProjectView: View {
 //            TextField("", text: $name, axis: .vertical)
 //                .focused($focused)
             Text(project.name ?? "")
+            Spacer()
+            Text("\(countTasks(project: project))")
 //                .onAppear {
 //                    name = project.name ?? ""
 //                    if name == "" {
@@ -64,6 +71,10 @@ struct ProjectView: View {
         .sheet(isPresented: $showProjectDetails) {
             ProjectDetailsView(project: project)
         }
+    }
+    
+    private func countTasks(project: Project) -> Int {
+        return tasks.filter({$0.project == project && !$0.completed}).count
     }
 }
 

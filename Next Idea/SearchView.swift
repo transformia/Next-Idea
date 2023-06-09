@@ -22,30 +22,39 @@ struct SearchView: View {
     @FocusState private var focused: Bool
     
     var body: some View {
-        VStack {
-            TextField("Search", text: $searchText)
-                .disableAutocorrection(true)
-                .padding(20)
-                .focused($focused)
-                .onAppear {
-                    focused = true
-                }
-                .onSubmit {
-                    confirmedSearchText = searchText
-                }
-            NavigationView {
-                List {
-                    ForEach(tasks) { task in
-                        if(!task.completed) {
-                            if(task.name?.range(of: confirmedSearchText, options: .caseInsensitive) != nil || confirmedSearchText == "") { // if the task name contains the value of the search text, or the search text is blank
-                                TaskView(task: task)
+        
+        NavigationStack {
+            VStack {
+                TextField("Search", text: $searchText)
+                    .disableAutocorrection(true)
+                    .padding(20)
+                    .focused($focused)
+                    .onAppear {
+                        focused = true
+                    }
+                    .onSubmit {
+                        confirmedSearchText = searchText
+                    }
+                NavigationStack {
+                    List {
+                        ForEach(tasks) { task in
+                            if(!task.completed) {
+                                if(task.name?.range(of: confirmedSearchText, options: .caseInsensitive) != nil || confirmedSearchText == "") { // if the task name contains the value of the search text, or the search text is blank
+                                    TaskView(task: task)
+                                }
                             }
                         }
                     }
+                    .listStyle(PlainListStyle())
                 }
-                .listStyle(PlainListStyle())
+                .scrollDismissesKeyboard(.immediately) // dismiss the keyboard when scrolling through the search results
+                
+                NavigationLink {
+                    CompletedView()
+                } label: {
+                    Text("Completed tasks")
+                }
             }
-            .scrollDismissesKeyboard(.immediately) // dismiss the keyboard when scrolling through the search results
         }
     }
 }

@@ -16,6 +16,7 @@ struct QuickActionView: View {
     private var tasks: FetchedResults<Task>
     
     @State private var showProjectPicker = false
+    @State private var showTagPicker = false
     @State private var showDatePicker = false
     
     var body: some View {
@@ -26,6 +27,8 @@ struct QuickActionView: View {
                     
                     // Quick actions to move tasks to other lists:
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.list = 0
                             task.modifieddate = Date()
@@ -36,11 +39,13 @@ struct QuickActionView: View {
                         Image(systemName: "tray")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
                     }
                     
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.list = 1
                             task.modifieddate = Date()
@@ -51,11 +56,13 @@ struct QuickActionView: View {
                         Image(systemName: "scope")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
                     }
                     
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.list = 2
                             task.modifieddate = Date()
@@ -66,11 +73,13 @@ struct QuickActionView: View {
                         Image(systemName: "terminal.fill")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
                     }
                     
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.list = 3
                             task.modifieddate = Date()
@@ -81,34 +90,53 @@ struct QuickActionView: View {
                         Image(systemName: "text.append")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
                     }
                 }
 //                        .padding(.bottom, 120)
                 
-                // Quick actions to change date and project:
+                // Quick actions to change date project and tag:
                 HStack {
                     
                     // Show date picker:
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         showDatePicker = true
                     } label: {
                         Image(systemName: "calendar")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
                     }
                     
                     Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
                         showProjectPicker = true
                     } label: {
                         Image(systemName: "book.fill")
                             .resizable()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .padding(10)
+                    }
+                    
+                    Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
+                        showTagPicker = true
+                    } label: {
+                        Image(systemName: "tag")
+                            .resizable()
+                            .frame(width: 26, height: 26)
+                            .foregroundColor(.black)
+                            .padding(10)
+                    }
+                    .sheet(isPresented: $showTagPicker) {
+                        TagsPickerView(tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showProjectPicker) {
                         ProjectPickerView(tasks: tasks.filter({$0.selected}))
@@ -117,11 +145,24 @@ struct QuickActionView: View {
                         DatePickerView(tasks: tasks.filter({$0.selected}))
                             .presentationDetents([.height(500)])
                     }
+                    
+                    Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
+                        deselectAllTasks()
+                    } label: {
+                        Image(systemName: "pip.remove")
+                            .resizable()
+                            .frame(width: 26, height: 26)
+                            .foregroundColor(.black)
+                            .padding(10)
+                    }
                 }
 //                        .padding(.bottom, 60)
             }
-//                    .frame(height: 100)
-            .background(.black)
+            .frame(height: 100)
+//            .background(.secondary)
+            .offset(y: -10)
         }
         
         

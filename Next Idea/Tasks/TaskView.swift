@@ -48,8 +48,26 @@ struct TaskView: View {
     var body: some View {
         VStack(alignment: HorizontalAlignment.leading) {
             HStack {
-                if !editable {
+                
+                if(UserDefaults.standard.bool(forKey: "Checkbox")) { // if the checkbox is activated in the settings
+                    Image(systemName: task.ticked ? "checkmark.circle.fill" : "circle")
+                        .resizable()
+                        .frame(width: 24.0, height: 24.0)
+                        .onTapGesture {
+                            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                            impactMed.impactOccurred() // haptic feedback
+                            completeTask(task: task)
+                        }
+                        .foregroundColor(task.recurring ? .blue : nil)
+//                        .animation(.easeInOut(duration: 5), value: task.ticked)
+//                        .padding(.top, 10)
+                }
+                
+//                if !task.selected { // if the task is not selected, show it as a Text
+                if !editable { // if the task is not editable, show it as a Text
                     Text(task.name ?? "")
+                        .font(.callout)
+                        .padding([.top, .bottom], 5)
                         .onAppear {
                             if task.name == "" {
                                 editable = true // make it possible to edit new tasks when they are created
@@ -59,9 +77,12 @@ struct TaskView: View {
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                 }
                 
-                else {
+                else { // else if the task is editable, show it as a text field so that it can be edited
                     TextField("", text: $name, axis: .vertical)
                         .focused($focused)
+                        .font(.callout)
+                        .foregroundColor(.purple) // to distinguish it from when it is a Text
+                        .padding([.top, .bottom], 5)
                         .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                         .onAppear {
@@ -71,21 +92,27 @@ struct TaskView: View {
                             }
                         }
                         .onChange(of: name) { _ in
-                            task.name = name // save the changes
-                            PersistenceController.shared.save()
+//                            task.name = name // save the changes - kills the performance!
+//                            PersistenceController.shared.save()
                             
                             // If I press enter:
                             if name.contains("\n") { // if a newline is found
                                 name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                                focused = false // close the keyboard
-//                                editable = false // make the task into a Text again - or just leave it as a TextField until the next reload?
-                                task.name = name // save the changes
-                                PersistenceController.shared.save()
+                                if name == "" { // if the task has no name, delete it
+                                    viewContext.delete(task)
+                                }
+                                else { // if the task has a name, save it, make it into a Text, and close the keyboard
+                                    focused = false // close the keyboard
+                                    editable = false // make the task into a Text again
+                                    //                                task.selected = false // unselect the task, and make it into a Text again
+                                    task.name = name // save the changes to the name
+                                    PersistenceController.shared.save()
+                                }
                             }
                         }
                 }
                 
-                if focused || task.selected { // if I'm editing the task name, or have selected it, show a button to open the task details
+                if focused { // if I'm editing the task name, show a button to open the task details
                     Label("Task details", systemImage: "info.circle")
                         .labelStyle(.iconOnly)
                         .foregroundColor(.cyan)
@@ -161,35 +188,31 @@ struct TaskView: View {
                 }
             }
         }
-        .onTapGesture { // make the whole VStack tappable for editing the task name
-            editable = true
-            focused = true
+        .onTapGesture { // make the whole VStack tappable for editing the task name, or selecting / deselecting the task
+            print("Tapping on task")            
+            if tasks.filter({$0.selected}).count > 0 { // if at least one task is already selected, tapping on another task selects it, and tapping on a selected task deselects it
+                let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                impactMed.impactOccurred() // haptic feedback
+                task.selected.toggle()
+            }
+            else { // if no tasks are selected, tapping on a task makes it editable and opens the keyboard, and makes all other tasks non-editable
+                editable = true
+                focused = true
+                print("Selecting task")
+            }
+            PersistenceController.shared.save()
+        }
+        .onChange(of: focused) { _ in
+            if !focused { // if I tap on another task (and this task loses the focus), make it non editable, and save the changes
+                editable = false
+                task.name = name // save the changes to the name
+                PersistenceController.shared.save()
+            }
         }
         .swipeActions(edge: .leading) {
             
             Button { // tick this task if it is not recurring, otherwise increment its date
-                if !task.recurring {
-                    task.ticked.toggle()
-                    if !task.ticked { // if I'm uncompleting a task, mark it as not complete after a short while
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) { // complete the task after N seconds if it is still ticked
-                            task.completed = false
-                        }
-                    }
-                }
-                else { // else if the task is recurring, increment its date
-                    switch(task.recurrencetype) {
-                    case "days":
-                        task.date = Calendar.current.date(byAdding: .day, value: Int(task.recurrence), to: task.date ?? Date())
-                    case "weeks":
-                        task.date = Calendar.current.date(byAdding: .day, value: 7 * Int(task.recurrence), to: task.date ?? Date())
-                    case "months":
-                        task.date = Calendar.current.date(byAdding: .month, value: Int(task.recurrence), to: task.date ?? Date())
-                    case "years":
-                        task.date = Calendar.current.date(byAdding: .year, value: Int(task.recurrence), to: task.date ?? Date())
-                    default:
-                        print("Invalid recurrence")
-                    }
-                }
+                completeTask(task: task)
             } label: {
                 Label("Complete", systemImage: "checkmark")
             }
@@ -214,24 +237,31 @@ struct TaskView: View {
             .tint(.orange)
             
             
-        }
-        .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
-            
-            Button { // select this task
+            Button { // select or unselect this task
                 task.selected.toggle()
+                //                if !task.selected { // if I'm unselecting the task
+                ////                    focused = false // close the keyboard
+                ////                    if editable { // if the task was being edited
+                ////                        editable = false // make the task into a Text again
+                //                        task.name = name // save the changes to the name
+                ////                    }
+                //                }
                 PersistenceController.shared.save()
             } label: {
                 Label("Select", systemImage: "pin.circle")
             }
             .tint(.teal)
             
-//            // Edit the task details:
-//            Button {
-//                showTaskDetails = true
-//            } label: {
-//                Label("Details", systemImage: "info.circle")
-//            }
-//            .tint(.cyan)
+        }
+        .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
+            
+            // Edit the task details:
+            Button {
+                showTaskDetails = true
+            } label: {
+                Label("Details", systemImage: "info.circle")
+            }
+            .tint(.cyan)
             
             if task.list != 1 {
                 // Move the task to Now:
@@ -272,7 +302,7 @@ struct TaskView: View {
                 .tint(.brown)
             }
             
-            if task.list != 0 {
+//            if task.list != 0 {
                 // Toggle Waiting for on the task:
                 Button {
                     task.waitingfor.toggle()
@@ -282,10 +312,44 @@ struct TaskView: View {
                     Label("Waiting", systemImage: "stopwatch")
                 }
                 .tint(.gray)
-            }
+//            }
         }
         .sheet(isPresented: $showTaskDetails) {
             TaskDetailsView(task: task)
+        }
+    }
+    
+    private func completeTask(task: Task) {
+        if !task.recurring {
+            task.ticked.toggle()
+            task.modifieddate = Date()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) { // complete or uncomplete the task after N seconds
+                task.completed = task.ticked                
+                PersistenceController.shared.save()
+            }
+
+//            if !task.ticked { // if I'm uncompleting a task, mark it as not complete after a short while
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) { // complete the task after N seconds if it is still ticked
+//                    task.completed = false
+//                }
+//            }
+        }
+        else { // else if the task is recurring, increment its date after N seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
+                switch(task.recurrencetype) {
+                case "days":
+                    task.date = Calendar.current.date(byAdding: .day, value: Int(task.recurrence), to: task.date ?? Date())
+                case "weeks":
+                    task.date = Calendar.current.date(byAdding: .day, value: 7 * Int(task.recurrence), to: task.date ?? Date())
+                case "months":
+                    task.date = Calendar.current.date(byAdding: .month, value: Int(task.recurrence), to: task.date ?? Date())
+                case "years":
+                    task.date = Calendar.current.date(byAdding: .year, value: Int(task.recurrence), to: task.date ?? Date())
+                default:
+                    print("Invalid recurrence")
+                }
+                PersistenceController.shared.save()
+            }
         }
     }
     

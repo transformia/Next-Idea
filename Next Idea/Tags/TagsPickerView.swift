@@ -55,22 +55,21 @@ struct TagsPickerView: View {
                         HStack {
                             if tasks != [] { // if I have called this view with at least one tag
                                 Image(systemName: tasks[0].hasTag(tag: tag) ? "checkmark.square.fill" : "square")
-                                    .onTapGesture {
-                                        for task in tasks {
-                                            if task.hasTag(tag: tag) { // if the task already has this tag, remove it
-                                                tag.removeFromTasks(task) // note: the function addToTasks was created automatically by Core Data
-                                            }
-                                            else { // else add the tag to the task
-                                                tag.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
-                                                print("Adding tag \(tag.name ?? "") to task \(task.name ?? "")")
-                                            }
-                                        }
-                                        PersistenceController.shared.save()
-                                    }
                             }
                             
                             Text(tag.name ?? "")
-                            
+                        }
+                        .onTapGesture {
+                            for task in tasks {
+                                if task.hasTag(tag: tag) { // if the task already has this tag, remove it
+                                    tag.removeFromTasks(task) // note: the function addToTasks was created automatically by Core Data
+                                }
+                                else { // else add the tag to the task
+                                    tag.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
+                                    print("Adding tag \(tag.name ?? "") to task \(task.name ?? "")")
+                                }
+                            }
+                            PersistenceController.shared.save()
                         }
                     }
                 }

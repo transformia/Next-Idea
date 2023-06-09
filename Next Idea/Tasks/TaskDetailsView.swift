@@ -72,7 +72,9 @@ struct TaskDetailsView: View {
                         waitingFor = task.waitingfor
                         list = task.list
                         recurring = task.recurring
-                        recurrence = task.recurrence
+                        if task.recurrence != 0 { // so that it doesn't get set to 0 instead of 1 to begin with
+                            recurrence = task.recurrence
+                        }
                         recurrenceType = task.recurrencetype ?? "days"
                         link = task.link ?? ""
                         selectedProject = task.project
@@ -110,7 +112,7 @@ struct TaskDetailsView: View {
                     TagsPickerView(tasks: [task])
                 } label: {
                     VStack {
-                        if task.tags == nil {
+                        if task.tags?.count == 0 {
                             Text("Tags")
                         }
                         else {

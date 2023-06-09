@@ -19,6 +19,11 @@ struct ListView: View {
     
     @State var showDeferred: Bool // determines whether deferred items are shown or not. Can be set when calling the function
     
+//    @Binding var selectedTab: Int // binding so that change made here impact the tab selected in ContentView
+    @EnvironmentObject var tab: Tab
+    
+    @State private var showOtherTasksDueToday =  false
+    
     @State private var showProjectPicker = false
     @State private var showDatePicker = false
     @State private var showSearchView = false
@@ -26,62 +31,20 @@ struct ListView: View {
     @State private var showClearNowAlert = false
     @State private var showClearNextAlert = false
     
+    
     // Define lists:
     let lists = [(Int16(0), "Inbox"), (Int16(1), "Now"), (Int16(2), "Next"), (Int16(3), "Someday")]
     
     var body: some View {
         NavigationStack {
             VStack { // Contains ZStack and Quick action buttons
-                ZStack(alignment: .bottom) { // Contains task list, Clear completed tasks button, and Add task buttons
+                ZStack(alignment: .bottom) { // Contains task list and Add task buttons
                     
                     List {
-                        
-                        // Only in the Now list: show the number of tasks due today in other lists, if there are any, and link to the list of them:
-                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
-                            NavigationLink {
-                                DueTodayView()
-                            } label: {
-                                HStack {
-                                    Spacer()
-                                    Text("Other due and overdue tasks") // count of uncompleted tasks due today and overdue
-                                    Spacer()
-                                    Text("\(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
-                                }
-                                .foregroundColor(.blue)
-                            }
-                            .swipeActions {
-                                Button { // move all of the due tasks to the bottom of Now
-                                    
-                                    for task in tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}) {
-                                        task.order = (tasks.filter({$0.list == 1 && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
-                                        task.list = 1
-                                        task.modifieddate = Date()
-                                    }
-                                    
-                                    PersistenceController.shared.save() // save the changes
-                                } label: {
-                                    Label("Move to Now", systemImage: "scope")
-                                }
-                                .tint(.green)
-                            }
-                        }
-                        
                         // Show the tasks:
                             
                         ForEach(tasks.filter({filterResult(task: $0)})) { task in
                             HStack {
-                                if tasks.filter({$0.selected}).count > 0 {
-                                    Image(systemName: task.selected ? "circle.fill" : "circle")
-                                        .foregroundColor(task.selected ? .teal : nil)
-                                        .onTapGesture {
-                                            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-                                            impactMed.impactOccurred() // haptic feedback
-                                            
-                                            task.selected.toggle()
-                                            PersistenceController.shared.save()
-                                        }
-                                }
-                                
                                 if task.project == nil { // if the task has no project, just show the task
                                     TaskView(task: task)
                                 }
@@ -101,143 +64,108 @@ struct ListView: View {
                                         }
                                     }
                                 }
+                                
+                                // If at least one task is selected, show the selection circle next to each task:
+//                                if tasks.filter({$0.selected}).count > 0 {
+//                                    Image(systemName: task.selected ? "circle.fill" : "circle")
+//                                        .padding(.leading, 5)
+//                                        .foregroundColor(task.selected ? .teal : nil)
+//                                        .onTapGesture {
+//                                            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+//                                            impactMed.impactOccurred() // haptic feedback
+//
+//                                            task.selected.toggle()
+//                                            PersistenceController.shared.save()
+//                                        }
+//                                }
                             }
                         }
                         .onMove(perform: moveItem)
-                    }
-                    .listStyle(PlainListStyle())
-                    
-                    if tasks.filter({$0.list == list && !$0.completed && $0.ticked}).count > 0 { // if there are ticked tasks displayed, show a button to mark them as complete, and therefore hide them
-                        Button {
-                            for task in tasks {
-                                if task.ticked {
-                                    task.completed = true
+                        
+                        
+                        // Only in the Now list: show the tasks from other lists that are due today, if there are any:
+                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
+                            HStack {
+                                Image(systemName: showOtherTasksDueToday ? "arrowtriangle.down.fill" : "arrowtriangle.right.fill")
+                                    .resizable()
+                                    .frame(width: 10, height: 10)
+                                Text("Other tasks due today: \(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
+                                    .font(.callout)
+                            }
+                            .foregroundColor(.gray)
+                                .onTapGesture {
+                                    withAnimation {
+                                        showOtherTasksDueToday.toggle()
+                                    }
+                                }
+                            
+                            if showOtherTasksDueToday {
+                                ForEach(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})) { task in // filter out completed tasks, and keep only tasks due today that are not in the Now list
+                                    HStack {
+                                        TaskView(task: task)
+//                                            .padding(.leading, 10)
+                                        
+                                        switch(task.list) {
+                                        case 0:
+                                            Image(systemName: "tray")
+                                        case 1:
+                                            Image(systemName: "scope")
+                                        case 2:
+                                            Image(systemName: "terminal.fill")
+                                        case 3:
+                                            Image(systemName: "text.append")
+                                        default:
+                                            Image(systemName: "tray")
+                                        }
+                                    }
                                 }
                             }
-                            PersistenceController.shared.save()
-                        } label: {
-                            Text("Clear completed tasks")
                         }
-                        .padding(.bottom, 60)
+                        
+                            
+//                        // Only in the Now list: show the number of tasks due today in other lists, if there are any, and link to the list of them:
+//                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
+//                            NavigationLink {
+//                                DueTodayView()
+//                            } label: {
+//                                HStack {
+//                                    Spacer()
+//                                    Text("Other due and overdue tasks") // count of uncompleted tasks due today and overdue
+//                                    Spacer()
+//                                    Text("\(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
+//                                }
+//                                .foregroundColor(.blue)
+//                            }
+//                            .swipeActions {
+//                                Button { // move all of the due tasks to the bottom of Now
+//
+//                                    for task in tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}) {
+//                                        task.order = (tasks.filter({$0.list == 1 && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
+//                                        task.list = 1
+//                                        task.modifieddate = Date()
+//                                    }
+//
+//                                    PersistenceController.shared.save() // save the changes
+//                                } label: {
+//                                    Label("Move to Now", systemImage: "scope")
+//                                }
+//                                .tint(.green)
+//                            }
+//                        }
+                        
                     }
+                    .listStyle(PlainListStyle())
                     
                     // Add task buttons:
                     HStack {
                         addTaskTopButton
+                        addTaskToInbox
                         addTaskBottomButton
                     }
                 }
                 
                 QuickActionView()
                 
-                /*
-                // Second element of the VStack: Quick action buttons:
-                
-                if tasks.filter({$0.selected}).count > 0 { // show icons to move the tasks to other lists if at least one task is selected
-                    VStack {
-                        HStack {
-                            
-                            // Quick actions to move tasks to other lists:
-                            Button {
-                                for task in tasks.filter({$0.selected}) {
-                                    task.list = 0
-                                    task.modifieddate = Date()
-                                }
-                                PersistenceController.shared.save()
-                                deselectAllTasks()
-                            } label: {
-                                Image(systemName: "tray")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                            
-                            Button {
-                                for task in tasks.filter({$0.selected}) {
-                                    task.list = 1
-                                    task.modifieddate = Date()
-                                }
-                                PersistenceController.shared.save()
-                                deselectAllTasks()
-                            } label: {
-                                Image(systemName: "scope")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                            
-                            Button {
-                                for task in tasks.filter({$0.selected}) {
-                                    task.list = 2
-                                    task.modifieddate = Date()
-                                }
-                                PersistenceController.shared.save()
-                                deselectAllTasks()
-                            } label: {
-                                Image(systemName: "terminal.fill")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                            
-                            Button {
-                                for task in tasks.filter({$0.selected}) {
-                                    task.list = 3
-                                    task.modifieddate = Date()
-                                }
-                                PersistenceController.shared.save()
-                                deselectAllTasks()
-                            } label: {
-                                Image(systemName: "text.append")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                        }
-//                        .padding(.bottom, 120)
-                        
-                        // Quick actions to change date and project:
-                        HStack {
-                            
-                            // Show date picker:
-                            Button {
-                                showDatePicker = true
-                            } label: {
-                                Image(systemName: "calendar")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                            
-                            Button {
-                                showProjectPicker = true
-                            } label: {
-                                Image(systemName: "book.fill")
-                                    .resizable()
-                                    .frame(width: 26, height: 26)
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                            }
-                            .sheet(isPresented: $showProjectPicker) {
-                                ProjectPickerView(tasks: tasks.filter({$0.selected}))
-                            }
-                            .sheet(isPresented: $showDatePicker) {
-                                DatePickerView(tasks: tasks.filter({$0.selected}))
-                                    .presentationDetents([.height(500)])
-                            }
-                        }
-//                        .padding(.bottom, 60)
-                    }
-//                    .frame(height: 100)
-                    .background(.black)
-                }
-                
-                */
             }
             .sheet(isPresented: $showSearchView) {
                 SearchView()
@@ -366,9 +294,36 @@ struct ListView: View {
             task.list = list
             task.name = ""
             task.createddate = Date()
-            PersistenceController.shared.save()
+//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
         } label: {
             Image(systemName: "arrow.up")
+                .resizable()
+                .frame(width: 14, height: 14)
+                .foregroundColor(.white)
+                .padding(10)
+                .background(.green)
+                .clipShape(Circle())
+        }
+        .padding(.bottom, 8)
+    }
+    
+    var addTaskToInbox: some View {
+        Button {
+            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+            impactMed.impactOccurred() // haptic feedback
+            
+            tab.selection = 0
+            
+            // Create a new task:
+            let task = Task(context: viewContext)
+            task.id = UUID()
+            task.order = (tasks.last?.order ?? 0) + 1
+            task.list = 0
+            task.name = ""
+            task.createddate = Date()
+//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
+        } label: {
+            Image(systemName: "tray")
                 .resizable()
                 .frame(width: 14, height: 14)
                 .foregroundColor(.white)
@@ -390,7 +345,7 @@ struct ListView: View {
             task.list = list
             task.name = ""
             task.createddate = Date()
-            PersistenceController.shared.save()
+//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
         } label: {
             Image(systemName: "arrow.down")
                 .resizable()
@@ -448,8 +403,8 @@ struct ListView: View {
     }
 }
 
-struct ListView_Previews: PreviewProvider {
-    static var previews: some View {
-        ListView(list: 0, showDeferred: false)
-    }
-}
+//struct ListView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ListView(list: 0, showDeferred: false)
+//    }
+//}

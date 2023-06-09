@@ -16,6 +16,8 @@ struct ProjectListView: View {
     private var projects: FetchedResults<Project>
     
     @State private var showProjectDetailsView = false
+    @State private var showSettingsView = false
+    @State private var showSearchView = false
     
     
     var body: some View {
@@ -33,8 +35,22 @@ struct ProjectListView: View {
             }
             .listStyle(PlainListStyle())
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showSettingsView = true
+                    } label: {
+                        Label("", systemImage: "gear")
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
+                        
+                        Button {
+                            showSearchView.toggle()
+                        } label: {
+                            Label("", systemImage: "magnifyingglass")
+                        }
+                        
                         EditButton()
                     }
                 }
@@ -48,6 +64,12 @@ struct ProjectListView: View {
         }
         .sheet(isPresented: $showProjectDetailsView) {
             ProjectDetailsView(project: nil)
+        }
+        .sheet(isPresented: $showSettingsView) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showSearchView) {
+            SearchView()
         }
     }
     
