@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4C16E6FB2A0D317900A0CF14 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C16E6FA2A0D317900A0CF14 /* SettingsView.swift */; };
+		4C291B432A37010800106213 /* AddTaskButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C291B422A37010800106213 /* AddTaskButtonsView.swift */; };
 		4C990E852A1540FE000903E2 /* TagTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E842A1540FE000903E2 /* TagTaskView.swift */; };
 		4C990E872A154273000903E2 /* TagListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E862A154273000903E2 /* TagListView.swift */; };
 		4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */; };
@@ -57,6 +58,7 @@
 
 /* Begin PBXFileReference section */
 		4C16E6FA2A0D317900A0CF14 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		4C291B422A37010800106213 /* AddTaskButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskButtonsView.swift; sourceTree = "<group>"; };
 		4C5B301B2A05281300D41F97 /* Next-Idea-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Next-Idea-Info.plist"; sourceTree = SOURCE_ROOT; };
 		4C990E842A1540FE000903E2 /* TagTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagTaskView.swift; sourceTree = "<group>"; };
 		4C990E862A154273000903E2 /* TagListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListView.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				4CCB165C2A05214D00FE5376 /* ListView.swift */,
 				4CCB16602A05216300FE5376 /* TaskView.swift */,
 				4CCB16622A05216900FE5376 /* TaskDetailsView.swift */,
+				4C291B422A37010800106213 /* AddTaskButtonsView.swift */,
 			);
 			path = Tasks;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 				4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */,
 				4CCB165F2A05215700FE5376 /* CompletedView.swift in Sources */,
 				4C990E872A154273000903E2 /* TagListView.swift in Sources */,
+				4C291B432A37010800106213 /* AddTaskButtonsView.swift in Sources */,
 				4CCB165D2A05214D00FE5376 /* ListView.swift in Sources */,
 				4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */,
 				4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */,

@@ -98,11 +98,7 @@ struct ProjectTaskView: View {
 //                }
                 
                 // Add task buttons:
-                HStack {
-                    addTaskTopButton
-                    addTaskToInbox
-                    addTaskBottomButton
-                }
+                AddTaskButtonsView(list: 2, project: project, tag: nil) // add the task to the "Next" list
             }
             
             QuickActionView()
@@ -139,83 +135,6 @@ struct ProjectTaskView: View {
             }
         }
         PersistenceController.shared.save()
-    }
-    
-    var addTaskTopButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.filter({$0.list == 2}).first?.order ?? 0) - 1 // set the order to the order of the first item in the default list, minus one
-            task.list = 2 // Next list by default
-            task.name = ""
-            task.project = project
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "arrow.up")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskToInbox: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            
-            tab.selection = 0
-            
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.last?.order ?? 0) + 1
-            task.list = 0
-            task.name = ""
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "tray")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskBottomButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.filter({$0.list == 2}).last?.order ?? 0) + 1  // set the order to the order of the last item in the default list, plus one
-            task.list = 2 // Next list by default
-            task.name = ""
-            task.project = project
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "arrow.down")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
     }
 }
 

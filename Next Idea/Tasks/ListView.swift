@@ -157,11 +157,7 @@ struct ListView: View {
                     .listStyle(PlainListStyle())
                     
                     // Add task buttons:
-                    HStack {
-                        addTaskTopButton
-                        addTaskToInbox
-                        addTaskBottomButton
-                    }
+                    AddTaskButtonsView(list: list, project: nil, tag: nil)
                 }
                 
                 QuickActionView()
@@ -281,81 +277,6 @@ struct ListView: View {
         }
         
         PersistenceController.shared.save() // save the item
-    }
-    
-    var addTaskTopButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.first?.order ?? 0) - 1
-            task.list = list
-            task.name = ""
-            task.createddate = Date()
-//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
-        } label: {
-            Image(systemName: "arrow.up")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskToInbox: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            
-            tab.selection = 0
-            
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.last?.order ?? 0) + 1
-            task.list = 0
-            task.name = ""
-            task.createddate = Date()
-//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
-        } label: {
-            Image(systemName: "tray")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskBottomButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.last?.order ?? 0) + 1
-            task.list = list
-            task.name = ""
-            task.createddate = Date()
-//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
-        } label: {
-            Image(systemName: "arrow.down")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
     }
     
     var clearNow: some View {

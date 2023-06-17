@@ -98,8 +98,8 @@ struct TaskView: View {
                             // If I press enter:
                             if name.contains("\n") { // if a newline is found
                                 name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                                if name == "" { // if the task has no name, delete it
-                                    viewContext.delete(task)
+                                if name == "" { // if the task has no name, do nothing (if I delete the task in this case, there are some rare cases where the task gets deleted just because I didn't change anything in it)
+//                                    viewContext.delete(task)
                                 }
                                 else { // if the task has a name, save it, make it into a Text, and close the keyboard
                                     focused = false // close the keyboard

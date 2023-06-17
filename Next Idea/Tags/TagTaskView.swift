@@ -90,10 +90,7 @@ struct TagTaskView: View {
 //                }
                 
                 // Add task buttons:
-                HStack {
-                    addTaskTopButton
-                    addTaskBottomButton
-                }
+                AddTaskButtonsView(list: 2, project: nil, tag: tag) // add the task to the "Next" list
             }
             .sheet(isPresented: $showSearchView) {
                 SearchView()
