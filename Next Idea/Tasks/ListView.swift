@@ -22,14 +22,16 @@ struct ListView: View {
 //    @Binding var selectedTab: Int // binding so that change made here impact the tab selected in ContentView
     @EnvironmentObject var tab: Tab
     
-    @State private var showOtherTasksDueToday =  false
+//    @State private var showOtherTasksDueToday =  false
     
     @State private var showProjectPicker = false
     @State private var showDatePicker = false
     @State private var showSearchView = false
+    @State private var showWaitingForView = false
     
-    @State private var showClearNowAlert = false
     @State private var showClearNextAlert = false
+    
+    @State private var showOnlyFocus = false
     
     
     // Define lists:
@@ -41,66 +43,40 @@ struct ListView: View {
                 ZStack(alignment: .bottom) { // Contains task list and Add task buttons
                     
                     List {
-                        // Show the tasks:
-                            
-                        ForEach(tasks.filter({filterResult(task: $0)})) { task in
-                            HStack {
-                                if task.project == nil { // if the task has no project, just show the task
-                                    TaskView(task: task)
-                                }
-                                
-                                else { // else if the task has a project, show the task as a navigation link to the project tasks
-                                    NavigationLink {
-                                        ProjectTaskView(project: task.project ?? Project())
-                                    } label: {
-                                        HStack {
-                                            TaskView(task:task)
-                                            
-                                            Spacer()
-                                            
-                                            Image(systemName: "book.fill")
-                                                .resizable()
-                                                .frame(width: 12, height: 12)
+                        
+                        // In the Next list: show focused tasks:
+                        if list == 2 && tasks.filter({($0.list == 2) && !$0.completed && $0.focus}).count > 0 { // if there are non-completed focused tasks in the Next list
+                            Section("Focus") {
+                                ForEach(tasks.filter({filterResult(task: $0, focus: true)})) { task in
+                                    HStack {
+                                        if task.project == nil { // if the task has no project, just show the task
+                                            TaskView(task: task)
+                                        }
+                                        
+                                        else { // else if the task has a project, show the task as a navigation link to the project tasks
+                                            NavigationLink {
+                                                ProjectTaskView(project: task.project ?? Project())
+                                            } label: {
+                                                HStack {
+                                                    TaskView(task:task)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    Image(systemName: "book.fill")
+                                                        .resizable()
+                                                        .frame(width: 12, height: 12)
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                                
-                                // If at least one task is selected, show the selection circle next to each task:
-//                                if tasks.filter({$0.selected}).count > 0 {
-//                                    Image(systemName: task.selected ? "circle.fill" : "circle")
-//                                        .padding(.leading, 5)
-//                                        .foregroundColor(task.selected ? .teal : nil)
-//                                        .onTapGesture {
-//                                            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-//                                            impactMed.impactOccurred() // haptic feedback
-//
-//                                            task.selected.toggle()
-//                                            PersistenceController.shared.save()
-//                                        }
-//                                }
+                                .onMove(perform: moveItemFocus)
                             }
                         }
-                        .onMove(perform: moveItem)
                         
-                        
-                        // Only in the Now list: show the tasks from other lists that are due today, if there are any:
-                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
-                            HStack {
-                                Image(systemName: showOtherTasksDueToday ? "arrowtriangle.down.fill" : "arrowtriangle.right.fill")
-                                    .resizable()
-                                    .frame(width: 10, height: 10)
-                                Text("Other tasks due today: \(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
-                                    .font(.callout)
-                            }
-                            .foregroundColor(.gray)
-                                .onTapGesture {
-                                    withAnimation {
-                                        showOtherTasksDueToday.toggle()
-                                    }
-                                }
-                            
-                            if showOtherTasksDueToday {
-                                ForEach(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})) { task in // filter out completed tasks, and keep only tasks due today that are not in the Now list
+                        if !showOnlyFocus && list == 2 && tasks.filter({!$0.completed && !$0.focus && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 { // if I'm not showing only focused tasks, and there are non-completed due or overdue tasks that are not focused
+                            Section("Due and overdue") {
+                                ForEach(tasks.filter({!$0.completed && !$0.focus && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})) { task in // filter out completed tasks, and keep only tasks due today or overdue, and not focused
                                     HStack {
                                         TaskView(task: task)
 //                                            .padding(.leading, 10)
@@ -108,8 +84,6 @@ struct ListView: View {
                                         switch(task.list) {
                                         case 0:
                                             Image(systemName: "tray")
-                                        case 1:
-                                            Image(systemName: "scope")
                                         case 2:
                                             Image(systemName: "terminal.fill")
                                         case 3:
@@ -119,45 +93,44 @@ struct ListView: View {
                                         }
                                     }
                                 }
+                                .onMove(perform: moveItemDue)
                             }
                         }
                         
-                            
-//                        // Only in the Now list: show the number of tasks due today in other lists, if there are any, and link to the list of them:
-//                        if list == 1 && tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count > 0 {
-//                            NavigationLink {
-//                                DueTodayView()
-//                            } label: {
-//                                HStack {
-//                                    Spacer()
-//                                    Text("Other due and overdue tasks") // count of uncompleted tasks due today and overdue
-//                                    Spacer()
-//                                    Text("\(tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count)")
-//                                }
-//                                .foregroundColor(.blue)
-//                            }
-//                            .swipeActions {
-//                                Button { // move all of the due tasks to the bottom of Now
-//
-//                                    for task in tasks.filter({!($0.list == 1) && !$0.completed && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())}) {
-//                                        task.order = (tasks.filter({$0.list == 1 && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
-//                                        task.list = 1
-//                                        task.modifieddate = Date()
-//                                    }
-//
-//                                    PersistenceController.shared.save() // save the changes
-//                                } label: {
-//                                    Label("Move to Now", systemImage: "scope")
-//                                }
-//                                .tint(.green)
-//                            }
-//                        }
-                        
+                        if !showOnlyFocus { // if I'm not showing only focused tasks
+                                Section("Tasks") {
+                                // Show the tasks:
+                                ForEach(tasks.filter({filterResult(task: $0, focus: false) && !$0.focus})) { task in
+                                    HStack {
+                                        if task.project == nil { // if the task has no project, just show the task
+                                            TaskView(task: task)
+                                        }
+                                        
+                                        else { // else if the task has a project, show the task as a navigation link to the project tasks
+                                            NavigationLink {
+                                                ProjectTaskView(project: task.project ?? Project())
+                                            } label: {
+                                                HStack {
+                                                    TaskView(task:task)
+                                                    
+                                                    Spacer()
+                                                    
+                                                    Image(systemName: "book.fill")
+                                                        .resizable()
+                                                        .frame(width: 12, height: 12)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .onMove(perform: moveItem)
+                            }
+                        }
                     }
                     .listStyle(PlainListStyle())
                     
                     // Add task buttons:
-                    AddTaskButtonsView(list: list, project: nil, tag: nil)
+                    AddTaskButtonsView(list: list, project: nil, tag: nil, focus: showOnlyFocus)
                 }
                 
                 QuickActionView()
@@ -165,6 +138,9 @@ struct ListView: View {
             }
             .sheet(isPresented: $showSearchView) {
                 SearchView()
+            }
+            .sheet(isPresented: $showWaitingForView) {
+                WaitingForView()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -175,6 +151,12 @@ struct ListView: View {
                             } label: {
                                 Label("", systemImage: "pip.remove")
                             }
+                        }
+                        
+                        Button {
+                            showWaitingForView.toggle()
+                        } label: {
+                            Label("", systemImage: "stopwatch")
                         }
                         
                         Button {
@@ -201,12 +183,9 @@ struct ListView: View {
                                 Label("", systemImage: "eye")
                             }
                         }
-                        
-                        if list == 1 {
-                            clearNow
-                        }
-                        else if list == 2 {
-                            clearNext
+                        if list == 2 {
+                            clearNextButton
+                            focusButton
                         }
                     }
                 }
@@ -216,12 +195,13 @@ struct ListView: View {
         }
     }
     
-    private func filterResult(task: Task) -> Bool { // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task. If the task has no project, or its project is set up to display all tasks, or just the first task and this is the first non-completed task of the project, display the task
+    private func filterResult(task: Task, focus: Bool) -> Bool { // filter out completed tasks, and tasks from other lists than the provided one. If I want to show deferred tasks, or if the task is not deferred, or if the start of the day of its date is before now, display the task
         if task.list == list // task is in the specified list
+            && task.focus == focus // task matches the provided focus filter
             && !task.completed // task is not completed
             && ( showDeferred || !task.dateactive || !task.hideuntildate || Calendar.current.startOfDay(for: task.date ?? Date()) <= Date() ) // I want to show deferred tasks, or the task doesn't have a date, or isn't hidden until that date, or the start of day of the date is in the past
-            && ( task.project == nil || task.project?.displayoption == "All" || (task.project?.displayoption == "First" && (task.project?.isFirstTask(order: task.order, list: task.list) != false) ) ) { // the task has no project, or all of the project's tasks should be displayed, or only the first one should be displayed, and this is the first one. If the project is on hold, the task will therefore not be displayed
-            
+        //            && ( task.project == nil || task.project?.displayoption == "All" || (task.project?.displayoption == "First" && (task.project?.isFirstTask(order: task.order, list: task.list) != false) ) ) { // the task has no project, or all of the project's tasks should be displayed, or only the first one should be displayed, and this is the first one. If the project is on hold, the task will therefore not be displayed
+        {
             return true
         }
         
@@ -239,8 +219,9 @@ struct ListView: View {
         PersistenceController.shared.save()
     }
     
-    private func moveItem(at sets:IndexSet, destination: Int) {
+    private func moveItemFocus(at sets:IndexSet, destination: Int) {
         let itemToMove = sets.first!
+        let tasksForMove = tasks.filter({filterResult(task: $0, focus: true)})
         
         // If the item is moving down:
         if itemToMove < destination {
@@ -250,58 +231,118 @@ struct ListView: View {
             let endIndex = destination - 1
 //            print(startIndex)
 //            print(endIndex)
-//            var startOrder = tasks.filter  ({$0.list == list && !$0.completed && ( showDeferred || !$0.dateactive || !$0.hideuntildate || Calendar.current.startOfDay(for: $0.date ?? Date()) <= Date() ) && ( $0.project == nil || $0.project?.displayoption == "All" || ($0.project?.displayoption == "First" && ($0.project?.isFirstTask(order: $0.order, list: $0.list) != false) ) ) })[itemToMove].order
-            var startOrder = tasks.filter({filterResult(task: $0)})[itemToMove].order
+            var startOrder = tasksForMove[itemToMove].order
 //            print(startOrder)
             // Change the order of all tasks between the task to move and the destination:
             while startIndex <= endIndex {
-                tasks.filter({filterResult(task: $0)})[startIndex].order = startOrder
+                tasksForMove[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter({filterResult(task: $0)})[itemToMove].order = startOrder // set the moved task's order to its final value
+            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
         }
         
         // Else if the item is moving up:
         else if itemToMove > destination {
             var startIndex = destination
             let endIndex = itemToMove - 1
-            var startOrder = tasks.filter({filterResult(task: $0)})[destination].order + 1
-            let newOrder = tasks.filter({filterResult(task: $0)})[destination].order
+            var startOrder = tasksForMove[destination].order + 1
+            let newOrder = tasksForMove[destination].order
+            // Change the order of all tasks between the task to move and the destination:
             while startIndex <= endIndex {
-                tasks.filter({filterResult(task: $0)})[startIndex].order = startOrder
+                tasksForMove[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            tasks.filter({filterResult(task: $0)})[itemToMove].order = newOrder // set the moved task's order to its final value
+            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
         }
         
         PersistenceController.shared.save() // save the item
     }
     
-    var clearNow: some View {
-        Button {
-            showClearNowAlert = true
-        } label: {
-            Label("", systemImage: "xmark.circle")
+    private func moveItemDue(at sets:IndexSet, destination: Int) {
+        let itemToMove = sets.first!
+        let tasksForMove = tasks.filter({!$0.completed && !$0.focus && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})
+        
+        // If the item is moving down:
+        if itemToMove < destination {
+//            print(itemToMove)
+//            print(destination)
+            var startIndex = itemToMove + 1
+            let endIndex = destination - 1
+//            print(startIndex)
+//            print(endIndex)
+            var startOrder = tasksForMove[itemToMove].order
+//            print(startOrder)
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                tasksForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
         }
-        .alert(isPresented: $showClearNowAlert) {
-            Alert(title: Text("This will move all tasks that are not due now to the Next list"), message: Text("Are you sure?"), primaryButton: .default(Text("OK")) {
-                
-                // Clear all tasks from Now, except the ones that are due or overdue:
-                for task in tasks.reversed() { // go through the tasks in reverse order, so that they end up in the same order as they were initially
-                    if(task.list == 1 && ( !task.dateactive || Calendar.current.startOfDay(for: task.date ?? Date()) > Calendar.current.startOfDay(for: Date()) )) { // if the task is in the Now list, and has no date or is due after today
-                        task.list = 2 // move the task to the top of the Next list
-                        task.order = (tasks.filter({$0.list == 2}).first?.order ?? 0) - 1 // set the order of the task to the order of the first task of the destination list minus 1
-                    }
-                }
-                PersistenceController.shared.save() // save the item
-                
-            }, secondaryButton: .cancel())
+        
+        // Else if the item is moving up:
+        else if itemToMove > destination {
+            var startIndex = destination
+            let endIndex = itemToMove - 1
+            var startOrder = tasksForMove[destination].order + 1
+            let newOrder = tasksForMove[destination].order
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                tasksForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
         }
+        
+        PersistenceController.shared.save() // save the item
     }
     
-    var clearNext: some View {
+    private func moveItem(at sets:IndexSet, destination: Int) {
+        let itemToMove = sets.first!
+        let tasksForMove = tasks.filter({filterResult(task: $0, focus: false)})
+        
+        // If the item is moving down:
+        if itemToMove < destination {
+//            print(itemToMove)
+//            print(destination)
+            var startIndex = itemToMove + 1
+            let endIndex = destination - 1
+//            print(startIndex)
+//            print(endIndex)
+            var startOrder = tasksForMove[itemToMove].order
+//            print(startOrder)
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                tasksForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
+        }
+        
+        // Else if the item is moving up:
+        else if itemToMove > destination {
+            var startIndex = destination
+            let endIndex = itemToMove - 1
+            var startOrder = tasksForMove[destination].order + 1
+            let newOrder = tasksForMove[destination].order
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                tasksForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
+        }
+        
+        PersistenceController.shared.save() // save the item
+    }
+    
+    var clearNextButton: some View {
         Button {
             showClearNextAlert = true
         } label: {
@@ -310,16 +351,27 @@ struct ListView: View {
         .alert(isPresented: $showClearNextAlert) {
             Alert(title: Text("This will move all tasks to the Someday list"), message: Text("Are you sure?"), primaryButton: .default(Text("OK")) {
                 
-                // Clear all tasks from Next:
+                // Clear all tasks from Next, and remove focus:
+                var i: Int64 = 0
                 for task in tasks.reversed() { // go through the elements in reverse order, so that they end up in the same order as they were initially
                     if(task.list == 2) { // if the item is in the Next list
+                        task.order = (tasks.filter({$0.list == 3}).first?.order ?? 0) - 1 - i // set the order of the task to the order of the first task of the destination list minus 1, minus the number of tasks that I have already moved
                         task.list = 3 // move the item to the top of the Someday list
-                        task.order = (tasks.filter({$0.list == 3}).first?.order ?? 0) - 1 // set the order of the task to the order of the first task of the destination list minus 1
+                        task.focus = false
+                        i += 1 // increment i
                     }
                 }
                 PersistenceController.shared.save() // save the item
                 
             }, secondaryButton: .cancel())
+        }
+    }
+    
+    var focusButton: some View {
+        Button {
+            showOnlyFocus.toggle()
+        } label: {
+            Label("", systemImage: "scope")
         }
     }
 }

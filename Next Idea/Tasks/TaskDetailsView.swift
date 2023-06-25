@@ -35,6 +35,7 @@ struct TaskDetailsView: View {
     @State private var name = ""
     @State private var note = ""
     @State private var list: Int16 = 0
+    @State private var focus = false
     @State private var date = Date()
     
     @State private var dateActive = false
@@ -55,56 +56,75 @@ struct TaskDetailsView: View {
     @State private var showDeleteAlert = false
     
     // Define lists:
-    let lists = [(Int16(0), "Inbox"), (Int16(1), "Now"), (Int16(2), "Next"), (Int16(3), "Someday")]
+    let lists = [(Int16(0), "Inbox"), (Int16(2), "Next"), (Int16(3), "Someday")]
     
     var body: some View {
         NavigationStack {
             Form {
-                TextField("", text: $name, axis: .vertical)
-                    .focused($focused)
-                    .onAppear {
-                        name = task.name ?? ""
-                        note = task.note ?? ""
-                        dateActive = task.dateactive
-                        reminderActive = task.reminderactive
-                        date = task.date ?? Date()
-                        hideUntilDate = task.hideuntildate
-                        waitingFor = task.waitingfor
-                        list = task.list
-                        recurring = task.recurring
-                        if task.recurrence != 0 { // so that it doesn't get set to 0 instead of 1 to begin with
-                            recurrence = task.recurrence
+                Group {
+                    TextField("", text: $name, axis: .vertical)
+                        .focused($focused)
+                        .onAppear {
+                            name = task.name ?? ""
+                            note = task.note ?? ""
+                            dateActive = task.dateactive
+                            reminderActive = task.reminderactive
+                            date = task.date ?? Date()
+                            hideUntilDate = task.hideuntildate
+                            waitingFor = task.waitingfor
+                            list = task.list
+                            focus = task.focus
+                            recurring = task.recurring
+                            if task.recurrence != 0 { // so that it doesn't get set to 0 instead of 1 to begin with
+                                recurrence = task.recurrence
+                            }
+                            recurrenceType = task.recurrencetype ?? "days"
+                            link = task.link ?? ""
+                            selectedProject = task.project
                         }
-                        recurrenceType = task.recurrencetype ?? "days"
-                        link = task.link ?? ""
-                        selectedProject = task.project
-                    }
-                    .onChange(of: name) { _ in
-                        // If I press enter:
-                        if name.contains("\n") { // if a newline is found
-                            name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                            focused = false // close the keyboard
+                        .onChange(of: name) { _ in
+                            // If I press enter:
+                            if name.contains("\n") { // if a newline is found
+                                print("New line found. Closing the keyboard")
+                                name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
+                                focused = false // close the keyboard
+                            }
+                        }
+                    
+                    TextField("Notes", text: $note, axis: .vertical)
+                        .font(.footnote)
+                    
+                    Picker("List", selection: $list) {
+                        ForEach(lists, id: \.self.0) {
+                            Text($0.1)
+                                .tag($0.0)
                         }
                     }
-                
-                TextField("Notes", text: $note, axis: .vertical)
-                    .font(.footnote)
-                
-                Picker("List", selection: $list) {
-                    ForEach(lists, id: \.self.0) {
-                        Text($0.1)
-                            .tag($0.0)
+                    .onChange(of: list) { _ in
+                        if list == 3 {
+                            focus = false // deactivate focus if I set the list to Someday
+                        }
                     }
+                    
+                    Toggle("Focus", isOn: $focus)
+                        .onChange(of: focus) { _ in
+                            if focus {
+                                list = 2 // if I focus on an Inbox or Someday task, move it to Next
+                            }
+                        }
                 }
                 
                 NavigationLink {
-                    ProjectPickerView(tasks: [task])
+                    ProjectPickerView(tasks: [task], save: false)
                 } label: {
                     if selectedProject == nil {
                         Text("Project")
                     }
                     else {
                         Text("\(task.project?.name ?? "")")
+                            .onTapGesture {
+                                selectedProject = nil // unselect the project
+                            }
                     }
                 }
                 
@@ -211,6 +231,60 @@ struct TaskDetailsView: View {
                         secondaryButton: .cancel()
                     )
                 }
+                if taskHasChanged() {
+                    
+                    Button() {
+                        saveTask()
+                    } label: {
+                        Label("Save changes", systemImage: "externaldrive.fill")
+                    }
+                    
+                    /*
+                    Group {
+                        if task.name != name {
+                            Text("Name has changed")
+                        }
+                        if task.note != note {
+                            Text("Note has changed")
+                        }
+                        if task.dateactive != dateActive {
+                            Text("Date active has changed")
+                        }
+                        if task.dateactive != dateActive {
+                            Text("Date active has changed")
+                        }
+                        if task.reminderactive != reminderActive {
+                            Text("Reminder active has changed")
+                        }
+                        if (task.date != date && task.date != nil) {
+                            Text("Date has changed")
+                        }
+                        if task.hideuntildate != hideUntilDate {
+                            Text("Hide until date has changed")
+                        }
+                    }
+                    Group {
+                        if task.waitingfor != waitingFor {
+                            Text("Waiting for has changed")
+                        }
+                        if task.list != list {
+                            Text("List has changed")
+                        }
+                        if task.recurring != recurring {
+                            Text("Recurring has changed")
+                        }
+                        if task.recurrence != recurrence {
+                            Text("Recurrence has changed from \(task.recurrence) to \(recurrence)")
+                        }
+                        if task.recurrencetype != recurrenceType {
+                            Text("Recurrence type has changed")
+                        }
+                    }
+                     */
+                    if task.link != link {
+                        Text("Link has changed from \(task.link ?? "") to \(link)")
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -225,37 +299,65 @@ struct TaskDetailsView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        task.name = name
-                        task.note = note
-                        task.dateactive = dateActive
-                        task.reminderactive = reminderActive
-                        
-                        // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
-                        if task.date != date {
-                            task.date = date
-                            task.cancelNotification()
-                            if reminderActive {
-                                task.createNotification()
-                            }
-                        }
-                        task.hideuntildate = hideUntilDate
-                        task.waitingfor = waitingFor
-                        task.list = list
-                        task.recurring = recurring
-                        task.recurrence = recurrence
-                        task.recurrencetype = recurrenceType
-                        task.link = link
-                        
-                        task.modifieddate = Date()
-                        PersistenceController.shared.save()
-                        dismiss() // dismiss the sheet
+                        saveTask()
                     } label: {
                         Text("Save")
                     }
                 }
             }
         }
-        .interactiveDismissDisabled(task.name != name || task.note != note || task.dateactive != dateActive || task.reminderactive != reminderActive || (task.date != date && task.date != nil) || task.hideuntildate != hideUntilDate || task.waitingfor != waitingFor || task.list != list || task.recurring != recurring || task.recurrence != recurrence || task.recurrencetype != recurrenceType) // prevent accidental dismissal of the sheet if any value has been modified (except the project, because that is modified in the project picker, but not saved -> could be an issue). I'm only disabling dismiss based on the date if task.date is not nil, otherwise it will always get stuck on new tasks
+        .interactiveDismissDisabled(taskHasChanged()) // prevent accidental dismissal of the sheet if any value has been modified (except the project, because that is modified in the project picker, but not saved -> could be an issue). I'm only disabling dismiss based on the date if task.date is not nil, otherwise it will always get stuck on new tasks
+    }
+    
+    private func taskHasChanged() -> Bool {
+        if task.name != name ||
+            task.note != note ||
+            task.list != list ||
+            task.focus != focus ||
+            (task.date != date && task.date != nil) ||
+            task.dateactive != dateActive ||
+            task.reminderactive != reminderActive ||
+            task.hideuntildate != hideUntilDate ||
+            task.waitingfor != waitingFor ||
+            task.recurring != recurring ||
+            task.recurrence != recurrence ||
+            task.recurrencetype != recurrenceType ||
+            task.link != link
+        {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+    
+    private func saveTask() {
+        task.name = name
+        task.note = note
+        task.dateactive = dateActive
+        task.reminderactive = reminderActive
+        
+        // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
+        if task.date != date {
+            task.date = date
+            task.cancelNotification()
+            if reminderActive {
+                task.createNotification()
+            }
+        }
+        task.hideuntildate = hideUntilDate
+        task.waitingfor = waitingFor
+        task.list = list
+        task.project = selectedProject // so that the project is cleared if I've cleared it
+        task.focus = focus
+        task.recurring = recurring
+        task.recurrence = recurrence
+        task.recurrencetype = recurrenceType
+        task.link = link
+        
+        task.modifieddate = Date()
+        PersistenceController.shared.save()
+        dismiss() // dismiss the sheet
     }
 }
 

@@ -36,7 +36,7 @@ struct TagsPickerView: View {
             if tags.filter({$0.name?.range(of: searchText, options: .caseInsensitive) != nil}).count == 0 && searchText != "" { // if I have entered a search text, and there is no match, show a button to create a new tag
                 Label("Create tag: \(searchText)", systemImage: "tag")
                     .onTapGesture {
-                        if tasks != [] { // if I have called this view with at least one tag
+                        if tasks != [] { // if I have called this view with at least one task
                             let tag = Tag(context: viewContext)
                             tag.id = UUID()
                             tag.name = searchText

@@ -18,6 +18,7 @@ struct AddTaskButtonsView: View {
     let list: Int16 // list to add the task to
     let project: Project?
     let tag: Tag?
+    let focus: Bool
     
     @EnvironmentObject var tab: Tab
     
@@ -41,6 +42,9 @@ struct AddTaskButtonsView: View {
             task.name = ""
             task.project = project
             tag?.addToTasks(task)
+            task.focus = focus
+            task.link = ""
+            task.recurrence = 1
             task.createddate = Date()
 //            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
         } label: {
@@ -68,6 +72,8 @@ struct AddTaskButtonsView: View {
             task.order = (tasks.last?.order ?? 0) + 1
             task.list = 0
             task.name = ""
+            task.link = ""
+            task.recurrence = 1
             task.createddate = Date()
 //            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
         } label: {
@@ -93,6 +99,9 @@ struct AddTaskButtonsView: View {
             task.list = list
             task.name = ""
             task.project = project
+            task.focus = focus
+            task.link = ""
+            task.recurrence = 1
             tag?.addToTasks(task)
             task.createddate = Date()
 //            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
@@ -111,6 +120,6 @@ struct AddTaskButtonsView: View {
 
 struct AddTaskButtonsView_Previews: PreviewProvider {
     static var previews: some View {
-        AddTaskButtonsView(list: 0, project: nil, tag: nil)
+        AddTaskButtonsView(list: 0, project: nil, tag: nil, focus: false)
     }
 }

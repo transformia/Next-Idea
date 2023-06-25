@@ -139,7 +139,7 @@ struct QuickActionView: View {
                         TagsPickerView(tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showProjectPicker) {
-                        ProjectPickerView(tasks: tasks.filter({$0.selected}))
+                        ProjectPickerView(tasks: tasks.filter({$0.selected}), save: true)
                     }
                     .sheet(isPresented: $showDatePicker) {
                         DatePickerView(tasks: tasks.filter({$0.selected}))

@@ -18,43 +18,46 @@ struct WaitingForView: View {
     @State private var showSearchView = false
     
     var body: some View {
-        List {
-            ForEach(tasks.filter({!$0.completed && $0.waitingfor})) { task in // filter out completed tasks, and keep only waiting for tasks
-                HStack {
-                    TaskView(task: task)
-                    
-                    Spacer()
-                    
-                    // Show the list's icon:
-                    switch(task.list) {
-                    case 0:
-                        Image(systemName: "tray")
-                    case 1:
-                        Image(systemName: "scope")
-                    case 2:
-                        Image(systemName: "terminal.fill")
-                    case 3:
-                        Image(systemName: "text.append")
-                    default:
-                        Image(systemName: "tray")
+        NavigationStack {
+            List {
+                ForEach(tasks.filter({!$0.completed && $0.waitingfor})) { task in // filter out completed tasks, and keep only waiting for tasks
+                    HStack {
+                        TaskView(task: task)
+                        
+                        Spacer()
+                        
+                        // Show the list's icon:
+                        switch(task.list) {
+                        case 0:
+                            Image(systemName: "tray")
+                        case 1:
+                            Image(systemName: "scope")
+                        case 2:
+                            Image(systemName: "terminal.fill")
+                        case 3:
+                            Image(systemName: "text.append")
+                        default:
+                            Image(systemName: "tray")
+                        }
                     }
                 }
+                .onMove(perform: moveItem)
             }
-            .onMove(perform: moveItem)
-        }
-        .navigationTitle("Waiting for")
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showSearchView) {
-            SearchView()
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                
-                
-                Button {
-                    showSearchView.toggle()
-                } label: {
-                    Label("", systemImage: "magnifyingglass")
+            .listStyle(PlainListStyle())
+            .navigationTitle("Waiting for")
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showSearchView) {
+                SearchView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    
+                    
+                    Button {
+                        showSearchView.toggle()
+                    } label: {
+                        Label("", systemImage: "magnifyingglass")
+                    }
                 }
             }
         }

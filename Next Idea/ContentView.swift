@@ -33,7 +33,7 @@ struct ContentView: View {
                     Label("Inbox", systemImage: "tray")
                 }
                 .tag(0)
-
+            
             NavigationStack {
                 ProjectListView()
             }
@@ -41,6 +41,28 @@ struct ContentView: View {
                 Label("Projects", systemImage: "book")
             }
             .tag(1)
+            
+            ListView(list: 2, showDeferred: false)
+                .tabItem {
+                    Label("Next", systemImage: "terminal.fill")
+                }
+                .tag(2)
+            
+            ListView(list: 3, showDeferred: false)
+                .tabItem {
+                    Label("Someday", systemImage: "text.append")
+                }
+                .tag(3)
+            
+            NavigationStack {
+                TagListView()
+            }
+            .tabItem {
+                Label("Tags", systemImage: "tag")
+            }
+            .tag(4)
+            
+        }
             
 //            NavigationLink {
 //                ListView(list: 1, showDeferred: false)
@@ -52,11 +74,11 @@ struct ContentView: View {
 //                }
 //            }
             
-            ListView(list: 1, showDeferred: false)
-                .tabItem {
-                    Label("Now", systemImage: "scope")
-                }
-                .tag(2)
+//            ListView(list: 1, showDeferred: false)
+//                .tabItem {
+//                    Label("Now", systemImage: "scope")
+//                }
+//                .tag(2)
             
             
 //            FocusView()
@@ -64,8 +86,8 @@ struct ContentView: View {
 //                    Label("Focus", systemImage: "scope")
 //                }
             
-            NavigationStack {
-                List {
+//            NavigationStack {
+//                List {
                     
 //                    NavigationLink {
 //                        ListView(list: 0, showDeferred: false)
@@ -87,64 +109,65 @@ struct ContentView: View {
 //                        }
 //                    }
                     
-                    NavigationLink {
-                        ListView(list: 2, showDeferred: false)
-                    } label: {
-                        HStack {
-                            Text("Next")
-                            Spacer()
-                            Text("\(countTasks(list: 2))")
-                        }
-                    }
-                    
-                    NavigationLink {
-                        ListView(list: 3, showDeferred: false)
-                    } label: {
-                        HStack {
-                            Text("Someday")
-                            Spacer()
-                            Text("\(countTasks(list: 3))")
-                        }
-                    }
-                    
-                    NavigationLink {
-                        WaitingForView()
-                    } label: {
-                        HStack {
-                            Text("Waiting for")
-                            Spacer()
-                            Text("\(countTasks(list: 4))")
-                        }
-                    }
-                }
-                .navigationTitle("Tasks")
-                .navigationBarTitleDisplayMode(.inline)
-                .sheet(isPresented: $showSearchView) {
-                    SearchView()
-                }
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            showSearchView.toggle()
-                        } label: {
-                            Label("", systemImage: "magnifyingglass")
-                        }
-                    }
-                }
-            }
-            .tabItem {
-                Label("Tasks", systemImage: "play.fill")
-            }
-            .tag(3)
+//
+//                    NavigationLink {
+//                        ListView(list: 2, showDeferred: false)
+//                    } label: {
+//                        HStack {
+//                            Text("Next")
+//                            Spacer()
+//                            Text("\(countTasks(list: 2))")
+//                        }
+//                    }
+//
+//                    NavigationLink {
+//                        ListView(list: 3, showDeferred: false)
+//                    } label: {
+//                        HStack {
+//                            Text("Someday")
+//                            Spacer()
+//                            Text("\(countTasks(list: 3))")
+//                        }
+//                    }
+//
+//                    NavigationLink {
+//                        WaitingForView()
+//                    } label: {
+//                        HStack {
+//                            Text("Waiting for")
+//                            Spacer()
+//                            Text("\(countTasks(list: 4))")
+//                        }
+//                    }
+//                }
+//                .navigationTitle("Tasks")
+//                .navigationBarTitleDisplayMode(.inline)
+//                .sheet(isPresented: $showSearchView) {
+//                    SearchView()
+//                }
+//                .toolbar {
+//                    ToolbarItem(placement: .navigationBarTrailing) {
+//                        Button {
+//                            showSearchView.toggle()
+//                        } label: {
+//                            Label("", systemImage: "magnifyingglass")
+//                        }
+//                    }
+//                }
+//            }
+//            .tabItem {
+//                Label("Tasks", systemImage: "play.fill")
+//            }
+//            .tag(3)
             
             
-            NavigationStack {
-                TagListView()
-            }
-                .tabItem {
-                    Label("Tags", systemImage: "tag")
-                }
-                .tag(4)
+//            NavigationStack {
+//                TagListView()
+//            }
+//                .tabItem {
+//                    Label("Tags", systemImage: "tag")
+//                }
+//                .tag(4)
             
 //            SearchView()
 //                .tabItem {
@@ -157,7 +180,7 @@ struct ContentView: View {
 //                    Label("Home", systemImage: "house")
 //                }
 //                .tag(4)
-        }
+//        }
         
         /*
         TabView(selection: $tab.selection) {

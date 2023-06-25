@@ -86,7 +86,7 @@ struct TaskView: View {
                         .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                         .onAppear {
-                            name = task.name ?? ""
+//                            name = task.name ?? ""
                             if name == "" {
                                 focused = true // focus on the task when it is created
                             }
@@ -97,6 +97,7 @@ struct TaskView: View {
                             
                             // If I press enter:
                             if name.contains("\n") { // if a newline is found
+                                print("New line found. Closing the keyboard")
                                 name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
                                 if name == "" { // if the task has no name, do nothing (if I delete the task in this case, there are some rare cases where the task gets deleted just because I didn't change anything in it)
 //                                    viewContext.delete(task)
@@ -195,11 +196,16 @@ struct TaskView: View {
                 impactMed.impactOccurred() // haptic feedback
                 task.selected.toggle()
             }
+            else if !editable { // if no tasks are selected, and I'm not editing the task, tapping on a task opens the task details
+                showTaskDetails = true
+            }
+            /*
             else { // if no tasks are selected, tapping on a task makes it editable and opens the keyboard, and makes all other tasks non-editable
                 editable = true
                 focused = true
                 print("Selecting task")
             }
+            */
             PersistenceController.shared.save()
         }
         .onChange(of: focused) { _ in
@@ -255,26 +261,45 @@ struct TaskView: View {
         }
         .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
             
-            // Edit the task details:
+            // Edit the task name:
             Button {
-                showTaskDetails = true
+                editable = true
+                focused = true
+                print("Selecting task")
+//                showTaskDetails = true
             } label: {
-                Label("Details", systemImage: "info.circle")
+                Label("Edit", systemImage: "pencil")
+//                Label("Details", systemImage: "info.circle")
             }
             .tint(.cyan)
             
-            if task.list != 1 {
-                // Move the task to Now:
-                Button {
-                    task.order = (tasks.filter({$0.list == 1 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
-                    task.list = 1
-                    task.modifieddate = Date()
-                    PersistenceController.shared.save() // save the item
-                } label: {
-                    Label("Now", systemImage: "scope")
+//            if task.list != 1 {
+//                // Move the task to Now:
+//                Button {
+//                    task.order = (tasks.filter({$0.list == 1 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+//                    task.list = 1
+//                    task.modifieddate = Date()
+//                    PersistenceController.shared.save() // save the item
+//                } label: {
+//                    Label("Now", systemImage: "scope")
+//                }
+//                .tint(.green)
+//            }
+            
+            // Make the task focused / non focused:
+            Button {
+                task.list = 2 // move the task to the Next list
+                task.focus.toggle() // toggle focus
+                // If I'm removing focus from a task, put it at the top of the Next list:
+                if !task.focus {
+                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the Next list minus 1
                 }
-                .tint(.green)
+                task.modifieddate = Date()
+                PersistenceController.shared.save() // save the item
+            } label: {
+                Label("Focus", systemImage: "scope")
             }
+            .tint(.green)
             
             if task.list != 2 {
                 // Move the task to Next:
@@ -294,6 +319,7 @@ struct TaskView: View {
                 Button {
                     task.order = (tasks.filter({$0.list == 3 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
                     task.list = 3
+                    task.focus = false
                     task.modifieddate = Date()
                     PersistenceController.shared.save() // save the item
                 } label: {

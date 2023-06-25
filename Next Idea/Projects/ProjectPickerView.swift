@@ -17,22 +17,58 @@ struct ProjectPickerView: View {
     
     @Environment(\.dismiss) private var dismiss // used for dismissing this view
     
+    @State private var searchText = ""
+    
+    @FocusState private var focused: Bool
+    
     let tasks: [Task]
+    let save: Bool // determines whether the change should be saved right away or not. It should be saved when doing a quick action, but not when editing a task in TaskDetailsView
     
     var body: some View {
-        List {
-            ForEach(projects.filter({!$0.completed})) { project in
-//                ProjectView(project: project)
-                Text(project.name ?? "")
+        VStack {
+            TextField("Search", text: $searchText)
+                .disableAutocorrection(true)
+                .padding(20)
+                .focused($focused)
+                .onAppear {
+                    focused = true
+                }
+            
+            if projects.filter({$0.name?.range(of: searchText, options: .caseInsensitive) != nil}).count == 0 && searchText != "" { // if I have entered a search text, and there is no match, show a button to create a new project
+                Label("Create project: \(searchText)", systemImage: "book")
                     .onTapGesture {
-                        for task in tasks {
-//                            print("Linking task \(task.name ?? "") to project \(project.name ?? "")")
-                            task.project = project
-                            task.modifieddate = Date()
-                            PersistenceController.shared.save()
+                        if tasks != [] { // if I have called this view with at least one task
+                            let project = Project(context: viewContext)
+                            project.id = UUID()
+                            project.name = searchText
+                            project.order = (projects.first?.order ?? 0) - 1
+                            for task in tasks {
+                                project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
+                                print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
+                            }
+                            if save {
+                                PersistenceController.shared.save()
+                            }
                         }
-                        dismiss()
                     }
+            }
+            
+            List {
+                ForEach(projects.filter({!$0.completed})) { project in
+                    if(project.name?.range(of: searchText, options: .caseInsensitive) != nil || searchText == "")  { // if the project name contains the value of the search text, or the search text is blank
+                        Text(project.name ?? "")
+                            .onTapGesture {
+                                for task in tasks {
+                                    project.addToTasks(task)
+                                    task.modifieddate = Date()
+                                }
+                                if save {
+                                    PersistenceController.shared.save()
+                                }
+                                dismiss()
+                            }
+                    }
+                }
             }
         }
     }
@@ -40,6 +76,6 @@ struct ProjectPickerView: View {
 
 struct ProjectPickerView_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectPickerView(tasks: [])
+        ProjectPickerView(tasks: [], save: false)
     }
 }
