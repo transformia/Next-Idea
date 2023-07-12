@@ -43,6 +43,8 @@ struct ProjectTaskView: View {
         VStack { // Contains project name, ZStack and Quick action buttons
             Text(project.name ?? "")
                 .font(.headline)
+                .padding()
+                .padding(.top, 10)
             
             ZStack(alignment: .bottom) { // Contains task list and Add task buttons
                 

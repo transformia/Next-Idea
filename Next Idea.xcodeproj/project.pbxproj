@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4C16E6FB2A0D317900A0CF14 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C16E6FA2A0D317900A0CF14 /* SettingsView.swift */; };
 		4C291B432A37010800106213 /* AddTaskButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C291B422A37010800106213 /* AddTaskButtonsView.swift */; };
+		4C8911C82A4A05E5006793CA /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8911C72A4A05E5006793CA /* IconPickerView.swift */; };
 		4C990E852A1540FE000903E2 /* TagTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E842A1540FE000903E2 /* TagTaskView.swift */; };
 		4C990E872A154273000903E2 /* TagListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E862A154273000903E2 /* TagListView.swift */; };
 		4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */; };
@@ -60,6 +61,7 @@
 		4C16E6FA2A0D317900A0CF14 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4C291B422A37010800106213 /* AddTaskButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskButtonsView.swift; sourceTree = "<group>"; };
 		4C5B301B2A05281300D41F97 /* Next-Idea-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Next-Idea-Info.plist"; sourceTree = SOURCE_ROOT; };
+		4C8911C72A4A05E5006793CA /* IconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerView.swift; sourceTree = "<group>"; };
 		4C990E842A1540FE000903E2 /* TagTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagTaskView.swift; sourceTree = "<group>"; };
 		4C990E862A154273000903E2 /* TagListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListView.swift; sourceTree = "<group>"; };
 		4CCB16272A051F4F00FE5376 /* Next Idea.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Next Idea.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -228,6 +230,7 @@
 				4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */,
 				4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */,
 				4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */,
+				4C8911C72A4A05E5006793CA /* IconPickerView.swift */,
 			);
 			path = Projects;
 			sourceTree = "<group>";
@@ -397,6 +400,7 @@
 				4CE893E92A095DD700755167 /* QuickActionView.swift in Sources */,
 				4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */,
 				4C16E6FB2A0D317900A0CF14 /* SettingsView.swift in Sources */,
+				4C8911C82A4A05E5006793CA /* IconPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

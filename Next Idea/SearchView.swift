@@ -53,6 +53,7 @@ struct SearchView: View {
                     CompletedView()
                 } label: {
                     Text("Completed tasks")
+                        .padding()
                 }
             }
         }

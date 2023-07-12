@@ -22,10 +22,15 @@ struct ProjectDetailsView: View {
     @State private var name = ""
     @State private var displayOption = "All"
     @State private var note = ""
+    @State private var selectedIcon = "book.fill"
+    @State private var selectedColor = "black"
     
     @FocusState private var focused: Bool
     
     @State private var showDeleteAlert = false
+    @State private var showIconPicker = false
+    
+    let colors = ["black", "green", "blue"]
     
     var body: some View {
         NavigationStack {
@@ -36,6 +41,8 @@ struct ProjectDetailsView: View {
                         name = project?.name ?? ""
                         displayOption = project?.displayoption ?? "All"
                         note = project?.note ?? ""
+                        selectedIcon = project?.icon ?? "book.fill"
+//                        selectedColor = project?.color
                         if project == nil { // if this is a new project, focus on the project name
                             focused = true
                         }
@@ -55,6 +62,29 @@ struct ProjectDetailsView: View {
                         .tag("First")
                     Text("On hold")
                         .tag("Hold")
+                }
+                
+                HStack {
+                    Text("Icon")
+                    Spacer()
+                    Image(systemName: selectedIcon)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(Color(selectedColor))
+                }
+                .onTapGesture {
+                    showIconPicker = true
+                }
+                
+                
+                HStack {
+                    Text("Color")
+                    Spacer()
+                    Picker("", selection: $selectedColor) {
+                        ForEach(colors, id: \.self) {
+                            Text($0)
+                        }
+                    }
                 }
                 
                 TextField("Notes", text: $note, axis: .vertical)
@@ -83,6 +113,9 @@ struct ProjectDetailsView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showIconPicker) {
+                IconPickerView(project: project ?? Project(), selectedIcon: $selectedIcon)
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -103,6 +136,8 @@ struct ProjectDetailsView: View {
                             project.name = name
                             project.note = note
                             project.displayoption = displayOption
+                            project.icon = selectedIcon
+                            project.color = selectedColor
                             project.createddate = Date()
                         }
                         else {
@@ -110,6 +145,8 @@ struct ProjectDetailsView: View {
                             project?.displayoption = displayOption
                             project?.note = note
                             project?.modifieddate = Date()
+                            project?.icon = selectedIcon
+                            project?.color = selectedColor
                         }
                         PersistenceController.shared.save()
                         dismiss() // dismiss the sheet

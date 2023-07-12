@@ -37,11 +37,11 @@ struct TaskView: View {
     
     @State private var name = ""
     
-    @State private var editable = false // determines if the task is editable or not, i.e. whether it is a Text or a TextField -> having only TextFields leads to stuttering when scrolling through long lists
+//    @State private var editable = false // determines if the task is editable or not, i.e. whether it is a Text or a TextField -> having only TextFields leads to stuttering when scrolling through long lists
     
     @State private var dateColor: Color = .primary // color in which the due date and reminder date are displayed
     
-    @FocusState private var focused: Bool
+    @FocusState private var focusOnName: Bool
     
     @State private var showTaskDetails = false
     
@@ -64,33 +64,39 @@ struct TaskView: View {
                 }
                 
 //                if !task.selected { // if the task is not selected, show it as a Text
-                if !editable { // if the task is not editable, show it as a Text
+                if !task.editable { // if the task is not editable, show it as a Text
                     Text(task.name ?? "")
                         .font(.callout)
                         .padding([.top, .bottom], 5)
-                        .onAppear {
-                            if task.name == "" {
-                                editable = true // make it possible to edit new tasks when they are created
-                            }
-                        }
+//                        .onAppear { // this probably causes task names to get deleted sometimes
+//                            if task.name == "" {
+//                                editable = true // make it possible to edit new tasks when they are created
+//                            }
+//                        }
                         .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                 }
                 
                 else { // else if the task is editable, show it as a text field so that it can be edited
                     TextField("", text: $name, axis: .vertical)
-                        .focused($focused)
+                        .focused($focusOnName)
                         .font(.callout)
                         .foregroundColor(.purple) // to distinguish it from when it is a Text
                         .padding([.top, .bottom], 5)
                         .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                         .onAppear {
-//                            name = task.name ?? ""
-                            if name == "" {
-                                focused = true // focus on the task when it is created
+                            if task.editable {
+                                focusOnName = true
                             }
                         }
+//                        .onAppear { // this creates issues of task names disappearing sometimes
+////                            name = task.name ?? ""
+////                            if name == "" {
+//                            if editable {
+//                                focused = true // focus on the task when it is created
+//                            }
+//                        }
                         .onChange(of: name) { _ in
 //                            task.name = name // save the changes - kills the performance!
 //                            PersistenceController.shared.save()
@@ -103,22 +109,24 @@ struct TaskView: View {
 //                                    viewContext.delete(task)
                                 }
                                 else { // if the task has a name, save it, make it into a Text, and close the keyboard
-                                    focused = false // close the keyboard
-                                    editable = false // make the task into a Text again
+                                    focusOnName = false // close the keyboard
+                                    task.editable = false // make the task into a Text again
                                     //                                task.selected = false // unselect the task, and make it into a Text again
                                     task.name = name // save the changes to the name
                                     PersistenceController.shared.save()
                                 }
                             }
                         }
+                    
+//                    Text("Editable!")
                 }
                 
-                if focused { // if I'm editing the task name, show a button to open the task details
+                if focusOnName { // if I'm editing the task name, show a button to open the task details
                     Label("Task details", systemImage: "info.circle")
                         .labelStyle(.iconOnly)
                         .foregroundColor(.cyan)
                         .onTapGesture {
-                            focused = false
+                            focusOnName = false
                             showTaskDetails = true
                         }
                 }
@@ -196,7 +204,7 @@ struct TaskView: View {
                 impactMed.impactOccurred() // haptic feedback
                 task.selected.toggle()
             }
-            else if !editable { // if no tasks are selected, and I'm not editing the task, tapping on a task opens the task details
+            else if !task.editable { // if no tasks are selected, and I'm not editing the task, tapping on a task opens the task details
                 showTaskDetails = true
             }
             /*
@@ -208,13 +216,13 @@ struct TaskView: View {
             */
             PersistenceController.shared.save()
         }
-        .onChange(of: focused) { _ in
-            if !focused { // if I tap on another task (and this task loses the focus), make it non editable, and save the changes
-                editable = false
-                task.name = name // save the changes to the name
-                PersistenceController.shared.save()
-            }
-        }
+//        .onChange(of: focusOnName) { _ in
+//            if !focusOnName { // if I tap on another task (and this task loses the focus), make it non editable, and save the changes
+//                task.editable = false
+//                task.name = name // save the changes to the name
+//                PersistenceController.shared.save()
+//            }
+//        }
         .swipeActions(edge: .leading) {
             
             Button { // tick this task if it is not recurring, otherwise increment its date
@@ -263,8 +271,9 @@ struct TaskView: View {
             
             // Edit the task name:
             Button {
-                editable = true
-                focused = true
+                name = task.name ?? "" // load the task name
+                task.editable = true
+                focusOnName = true
                 print("Selecting task")
 //                showTaskDetails = true
             } label: {
@@ -360,7 +369,7 @@ struct TaskView: View {
 //                }
 //            }
         }
-        else { // else if the task is recurring, increment its date after N seconds
+        else { // else if the task is recurring, increment its date after N seconds, and remove the focus from it
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
                 switch(task.recurrencetype) {
                 case "days":
@@ -374,6 +383,7 @@ struct TaskView: View {
                 default:
                     print("Invalid recurrence")
                 }
+                task.focus = false
                 PersistenceController.shared.save()
             }
         }

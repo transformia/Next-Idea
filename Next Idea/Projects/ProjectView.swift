@@ -30,6 +30,10 @@ struct ProjectView: View {
             Text(project.name ?? "")
             Spacer()
             Text("\(countTasks(project: project))")
+            Image(systemName: project.icon ?? "book.fill")
+                .resizable()
+                .frame(width: 18, height: 18)
+                .foregroundColor(Color(project.color ?? "black"))
 //                .onAppear {
 //                    name = project.name ?? ""
 //                    if name == "" {

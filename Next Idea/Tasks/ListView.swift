@@ -48,6 +48,29 @@ struct ListView: View {
                         if list == 2 && tasks.filter({($0.list == 2) && !$0.completed && $0.focus}).count > 0 { // if there are non-completed focused tasks in the Next list
                             Section("Focus") {
                                 ForEach(tasks.filter({filterResult(task: $0, focus: true)})) { task in
+                                    NavigationLink {
+                                        if task.project != nil {
+                                            ProjectTaskView(project: task.project ?? Project())
+                                        }
+                                        else {
+                                            ProjectPickerView(tasks: [task], save: true)
+                                        }
+                                    } label: {
+                                        HStack {
+                                            
+                                            TaskView(task: task)
+                                            
+                                            if task.project != nil {
+                                                Image(systemName: task.project?.icon ?? "book.fill")
+                                                    .resizable()
+                                                    .frame(width: 18, height: 18)
+                                                    .foregroundColor(Color(task.project?.color ?? "black"))
+                                                    .padding(.leading, 3)
+                                            }
+                                        }
+                                    }
+                                    
+                                    /* This causes the TaskDetailsView to close when I select a project, because the task disappears and appears again. It's annoying, and I lose any other changes that I've made
                                     HStack {
                                         if task.project == nil { // if the task has no project, just show the task
                                             TaskView(task: task)
@@ -69,6 +92,7 @@ struct ListView: View {
                                             }
                                         }
                                     }
+                                    */
                                 }
                                 .onMove(perform: moveItemFocus)
                             }
@@ -78,8 +102,27 @@ struct ListView: View {
                             Section("Due and overdue") {
                                 ForEach(tasks.filter({!$0.completed && !$0.focus && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})) { task in // filter out completed tasks, and keep only tasks due today or overdue, and not focused
                                     HStack {
-                                        TaskView(task: task)
-//                                            .padding(.leading, 10)
+                                        NavigationLink {
+                                            if task.project != nil {
+                                                ProjectTaskView(project: task.project ?? Project())
+                                            }
+                                            else {
+                                                ProjectPickerView(tasks: [task], save: true)
+                                            }
+                                        } label: {
+                                            HStack {
+                                                
+                                                TaskView(task: task)
+                                                
+                                                if task.project != nil {
+                                                    Image(systemName: task.project?.icon ?? "book.fill")
+                                                        .resizable()
+                                                        .frame(width: 18, height: 18)
+                                                        .foregroundColor(Color(task.project?.color ?? "black"))
+                                                        .padding(.leading, 3)
+                                                }
+                                            }
+                                        }
                                         
                                         switch(task.list) {
                                         case 0:
@@ -91,6 +134,12 @@ struct ListView: View {
                                         default:
                                             Image(systemName: "tray")
                                         }
+                                        
+//                                        if task.project != nil { // if the task has a project
+//                                            Spacer()
+//
+//                                            Image(systemName: "book")
+//                                        }
                                     }
                                 }
                                 .onMove(perform: moveItemDue)
@@ -100,7 +149,29 @@ struct ListView: View {
                         if !showOnlyFocus { // if I'm not showing only focused tasks
                                 Section("Tasks") {
                                 // Show the tasks:
-                                ForEach(tasks.filter({filterResult(task: $0, focus: false) && !$0.focus})) { task in
+                                    ForEach(tasks.filter({filterResult(task: $0, focus: false) && !$0.focus})) { task in
+                                        NavigationLink {
+                                            if task.project != nil {
+                                                ProjectTaskView(project: task.project ?? Project())
+                                            }
+                                            else {
+                                                ProjectPickerView(tasks: [task], save: true)
+                                            }
+                                        } label: {
+                                            HStack {
+                                                
+                                                TaskView(task: task)
+                                                
+                                                if task.project != nil {
+                                                    Image(systemName: task.project?.icon ?? "book.fill")
+                                                        .resizable()
+                                                        .frame(width: 18, height: 18)
+                                                        .foregroundColor(Color(task.project?.color ?? "black"))
+                                                        .padding(.leading, 3)
+                                                }
+                                            }
+                                        }
+                                    /*
                                     HStack {
                                         if task.project == nil { // if the task has no project, just show the task
                                             TaskView(task: task)
@@ -122,6 +193,7 @@ struct ListView: View {
                                             }
                                         }
                                     }
+                                    */
                                 }
                                 .onMove(perform: moveItem)
                             }

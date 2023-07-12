@@ -34,7 +34,8 @@ struct ProjectPickerView: View {
                     focused = true
                 }
             
-            if projects.filter({$0.name?.range(of: searchText, options: .caseInsensitive) != nil}).count == 0 && searchText != "" { // if I have entered a search text, and there is no match, show a button to create a new project
+            // If I have entered a search text, and there is no match, show a button to create a new project:
+            if projects.filter({$0.name?.range(of: searchText, options: .caseInsensitive) != nil}).count == 0 && searchText != "" {
                 Label("Create project: \(searchText)", systemImage: "book")
                     .onTapGesture {
                         if tasks != [] { // if I have called this view with at least one task
@@ -53,9 +54,10 @@ struct ProjectPickerView: View {
                     }
             }
             
+            // If the project name contains the value of the search text, or the search text is blank, display the project:
             List {
                 ForEach(projects.filter({!$0.completed})) { project in
-                    if(project.name?.range(of: searchText, options: .caseInsensitive) != nil || searchText == "")  { // if the project name contains the value of the search text, or the search text is blank
+                    if(project.name?.range(of: searchText, options: .caseInsensitive) != nil || searchText == "")  {
                         Text(project.name ?? "")
                             .onTapGesture {
                                 for task in tasks {

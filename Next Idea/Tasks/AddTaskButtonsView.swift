@@ -40,13 +40,14 @@ struct AddTaskButtonsView: View {
             task.order = (tasks.first?.order ?? 0) - 1
             task.list = list
             task.name = ""
+            task.editable = true
             task.project = project
             tag?.addToTasks(task)
             task.focus = focus
             task.link = ""
             task.recurrence = 1
             task.createddate = Date()
-//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased
+//            PersistenceController.shared.save() // don't save it now, otherwise it will show up as a blank task on other devices, and the task name might get erased - but it seems that that issue was caused buy the onAppear in TaskView, rather than on this - but this might actually make it worse
         } label: {
             Image(systemName: "arrow.up")
                 .resizable()
@@ -72,6 +73,7 @@ struct AddTaskButtonsView: View {
             task.order = (tasks.last?.order ?? 0) + 1
             task.list = 0
             task.name = ""
+            task.editable = true
             task.link = ""
             task.recurrence = 1
             task.createddate = Date()
@@ -98,6 +100,7 @@ struct AddTaskButtonsView: View {
             task.order = (tasks.last?.order ?? 0) + 1
             task.list = list
             task.name = ""
+            task.editable = true
             task.project = project
             task.focus = focus
             task.link = ""
