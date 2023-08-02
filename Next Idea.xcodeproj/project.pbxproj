@@ -12,6 +12,7 @@
 		4C8911C82A4A05E5006793CA /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C8911C72A4A05E5006793CA /* IconPickerView.swift */; };
 		4C990E852A1540FE000903E2 /* TagTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E842A1540FE000903E2 /* TagTaskView.swift */; };
 		4C990E872A154273000903E2 /* TagListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C990E862A154273000903E2 /* TagListView.swift */; };
+		4CA142A72A62E61400E70ECE /* ProjectPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA142A62A62E61400E70ECE /* ProjectPickerView.swift */; };
 		4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */; };
 		4CCB162D2A051F4F00FE5376 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB162C2A051F4F00FE5376 /* ContentView.swift */; };
 		4CCB162F2A051F5000FE5376 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4CCB162E2A051F5000FE5376 /* Assets.xcassets */; };
@@ -27,17 +28,16 @@
 		4CCB16612A05216300FE5376 /* TaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16602A05216300FE5376 /* TaskView.swift */; };
 		4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16622A05216900FE5376 /* TaskDetailsView.swift */; };
 		4CCB16652A05217000FE5376 /* ProjectListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCB16642A05217000FE5376 /* ProjectListView.swift */; };
-		4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */; };
 		4CD17BD12A054F6D005BA2E6 /* ProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */; };
 		4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */; };
 		4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */; };
-		4CD17BD72A055676005BA2E6 /* ProjectPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */; };
+		4CD17BD72A055676005BA2E6 /* ProjectPickerView_old.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD62A055676005BA2E6 /* ProjectPickerView_old.swift */; };
 		4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */; };
-		4CD17BDC2A06C6AA005BA2E6 /* DueTodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */; };
 		4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */; };
 		4CE893E92A095DD700755167 /* QuickActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893E82A095DD700755167 /* QuickActionView.swift */; };
 		4CE893EB2A0963B300755167 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893EA2A0963B300755167 /* SearchView.swift */; };
 		4CE893F02A09750400755167 /* TagsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893EF2A09750400755167 /* TagsPickerView.swift */; };
+		4CFF09CA2A6FFF0F006F4EF4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CFF09C92A6FFF0F006F4EF4 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +64,7 @@
 		4C8911C72A4A05E5006793CA /* IconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerView.swift; sourceTree = "<group>"; };
 		4C990E842A1540FE000903E2 /* TagTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagTaskView.swift; sourceTree = "<group>"; };
 		4C990E862A154273000903E2 /* TagListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListView.swift; sourceTree = "<group>"; };
+		4CA142A62A62E61400E70ECE /* ProjectPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPickerView.swift; sourceTree = "<group>"; };
 		4CCB16272A051F4F00FE5376 /* Next Idea.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Next Idea.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CCB162A2A051F4F00FE5376 /* Next_IdeaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Next_IdeaApp.swift; sourceTree = "<group>"; };
 		4CCB162C2A051F4F00FE5376 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,18 +84,17 @@
 		4CCB16602A05216300FE5376 /* TaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskView.swift; sourceTree = "<group>"; };
 		4CCB16622A05216900FE5376 /* TaskDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailsView.swift; sourceTree = "<group>"; };
 		4CCB16642A05217000FE5376 /* ProjectListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectListView.swift; sourceTree = "<group>"; };
-		4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingForView.swift; sourceTree = "<group>"; };
 		4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectView.swift; sourceTree = "<group>"; };
 		4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailsView.swift; sourceTree = "<group>"; };
 		4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTaskView.swift; sourceTree = "<group>"; };
-		4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPickerView.swift; sourceTree = "<group>"; };
+		4CD17BD62A055676005BA2E6 /* ProjectPickerView_old.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPickerView_old.swift; sourceTree = "<group>"; };
 		4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core Data Extensions.swift"; sourceTree = "<group>"; };
-		4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DueTodayView.swift; sourceTree = "<group>"; };
 		4CD17BDD2A06D5CF005BA2E6 /* Next Idea.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Next Idea.entitlements"; sourceTree = "<group>"; };
 		4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerView.swift; sourceTree = "<group>"; };
 		4CE893E82A095DD700755167 /* QuickActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionView.swift; sourceTree = "<group>"; };
 		4CE893EA2A0963B300755167 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		4CE893EF2A09750400755167 /* TagsPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagsPickerView.swift; sourceTree = "<group>"; };
+		4CFF09C92A6FFF0F006F4EF4 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,8 +163,6 @@
 				4CE893ED2A096B9400755167 /* Projects */,
 				4CE893EE2A0974F300755167 /* Tags */,
 				4CE893E82A095DD700755167 /* QuickActionView.swift */,
-				4CD17BCE2A054A74005BA2E6 /* WaitingForView.swift */,
-				4CD17BDB2A06C6AA005BA2E6 /* DueTodayView.swift */,
 				4CCB165E2A05215700FE5376 /* CompletedView.swift */,
 				4CE893EA2A0963B300755167 /* SearchView.swift */,
 				4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */,
@@ -207,6 +205,7 @@
 				4CCB16352A051F5000FE5376 /* Next_Idea.xcdatamodeld */,
 				4CCB16332A051F5000FE5376 /* Persistence.swift */,
 				4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */,
+				4CFF09C92A6FFF0F006F4EF4 /* Extensions.swift */,
 			);
 			path = "Core data";
 			sourceTree = "<group>";
@@ -229,7 +228,8 @@
 				4CD17BD02A054F6D005BA2E6 /* ProjectView.swift */,
 				4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */,
 				4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */,
-				4CD17BD62A055676005BA2E6 /* ProjectPickerView.swift */,
+				4CA142A62A62E61400E70ECE /* ProjectPickerView.swift */,
+				4CD17BD62A055676005BA2E6 /* ProjectPickerView_old.swift */,
 				4C8911C72A4A05E5006793CA /* IconPickerView.swift */,
 			);
 			path = Projects;
@@ -378,7 +378,7 @@
 				4CCB16652A05217000FE5376 /* ProjectListView.swift in Sources */,
 				4CCB16342A051F5000FE5376 /* Persistence.swift in Sources */,
 				4CCB162D2A051F4F00FE5376 /* ContentView.swift in Sources */,
-				4CD17BD72A055676005BA2E6 /* ProjectPickerView.swift in Sources */,
+				4CD17BD72A055676005BA2E6 /* ProjectPickerView_old.swift in Sources */,
 				4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */,
 				4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */,
 				4CCB165F2A05215700FE5376 /* CompletedView.swift in Sources */,
@@ -388,10 +388,9 @@
 				4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */,
 				4CCB162B2A051F4F00FE5376 /* Next_IdeaApp.swift in Sources */,
 				4CE893EB2A0963B300755167 /* SearchView.swift in Sources */,
-				4CD17BDC2A06C6AA005BA2E6 /* DueTodayView.swift in Sources */,
 				4CCB16632A05216900FE5376 /* TaskDetailsView.swift in Sources */,
 				4CCB165B2A05214100FE5376 /* HomeView.swift in Sources */,
-				4CD17BCF2A054A74005BA2E6 /* WaitingForView.swift in Sources */,
+				4CA142A72A62E61400E70ECE /* ProjectPickerView.swift in Sources */,
 				4C990E852A1540FE000903E2 /* TagTaskView.swift in Sources */,
 				4CCB16372A051F5000FE5376 /* Next_Idea.xcdatamodeld in Sources */,
 				4CCB16612A05216300FE5376 /* TaskView.swift in Sources */,
@@ -401,6 +400,7 @@
 				4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */,
 				4C16E6FB2A0D317900A0CF14 /* SettingsView.swift in Sources */,
 				4C8911C82A4A05E5006793CA /* IconPickerView.swift in Sources */,
+				4CFF09CA2A6FFF0F006F4EF4 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,13 +558,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Next Idea/Next Idea.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Next-Idea-Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Calendar access is required if you would like to view your calendars inside Next Idea";
+				INFOPLIST_KEY_NSRemindersUsageDescription = "Reminders access is required if you would like to import new tasks from the Apple Reminders app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -590,13 +592,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Next Idea/Next Idea.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Next-Idea-Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Calendar access is required if you would like to view your calendars inside Next Idea";
+				INFOPLIST_KEY_NSRemindersUsageDescription = "Reminders access is required if you would like to import new tasks from the Apple Reminders app";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -21,8 +21,10 @@ struct ProjectPickerView: View {
     
     @FocusState private var focused: Bool
     
-    let tasks: [Task]
-    let save: Bool // determines whether the change should be saved right away or not. It should be saved when doing a quick action, but not when editing a task in TaskDetailsView
+    @Binding var selectedProject: Project? // for returning the selected project to the TaskDetailsView
+    let tasks: [Task] // for updating one or several tasks using a quick action, or using the navigation link on a task without a project
+    
+//    let save: Bool // determines whether the change should be saved right away or not. It should be saved when doing a quick action, but not when editing a task in TaskDetailsView
     
     var body: some View {
         VStack {
@@ -38,19 +40,32 @@ struct ProjectPickerView: View {
             if projects.filter({$0.name?.range(of: searchText, options: .caseInsensitive) != nil}).count == 0 && searchText != "" {
                 Label("Create project: \(searchText)", systemImage: "book")
                     .onTapGesture {
-                        if tasks != [] { // if I have called this view with at least one task
+//                        if tasks != [] { // if I have called this view with at least one task
                             let project = Project(context: viewContext)
                             project.id = UUID()
                             project.name = searchText
                             project.order = (projects.first?.order ?? 0) - 1
+                        
+                        if tasks != [] { // if I have called this view with at least one task, update the tasks and save
                             for task in tasks {
                                 project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
                                 print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
                             }
-                            if save {
-                                PersistenceController.shared.save()
-                            }
+                            PersistenceController.shared.save()
                         }
+                        else { // else if I have called this from the TaskDetailsView, update the selected project so that I can save it in TaskDetailsView
+                            selectedProject = project
+//                            print("Selected project \(selectedProject?.name ?? "")")
+                        }
+                        
+//                            for task in tasks {
+//                                project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
+//                                print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
+//                            }
+//                            if save {
+//                                PersistenceController.shared.save()
+//                            }
+//                        }
                     }
             }
             
@@ -60,13 +75,24 @@ struct ProjectPickerView: View {
                     if(project.name?.range(of: searchText, options: .caseInsensitive) != nil || searchText == "")  {
                         Text(project.name ?? "")
                             .onTapGesture {
-                                for task in tasks {
-                                    project.addToTasks(task)
-                                    task.modifieddate = Date()
-                                }
-                                if save {
+                                if tasks != [] { // if I have called this view with at least one task, update the tasks and save
+                                    for task in tasks {
+                                        project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
+                                        print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
+                                    }
                                     PersistenceController.shared.save()
                                 }
+                                else { // else if I have called this from the TaskDetailsView, update the selected project so that I can save it in
+                                    selectedProject = project
+                                }
+//                                print("Selected project \(selectedProject?.name ?? "")")
+//                                for task in tasks {
+//                                    project.addToTasks(task)
+//                                    task.modifieddate = Date()
+//                                }
+//                                if save {
+//                                    PersistenceController.shared.save()
+//                                }
                                 dismiss()
                             }
                     }
@@ -76,8 +102,8 @@ struct ProjectPickerView: View {
     }
 }
 
-struct ProjectPickerView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProjectPickerView(tasks: [], save: false)
-    }
-}
+//struct ProjectPickerView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ProjectPickerView(tasks: [], save: false)
+//    }
+//}

@@ -23,6 +23,7 @@ struct CompletedView: View {
                     TaskView(task: task)
                 }
             }
+            .listStyle(PlainListStyle())
             
             if tasks.filter({$0.completed && $0.modifieddate ?? Date() < Calendar.current.date(byAdding: .month, value: -1, to: Date())!}).count > 0 {
                 Button {

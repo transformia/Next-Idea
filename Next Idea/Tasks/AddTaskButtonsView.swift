@@ -15,21 +15,46 @@ struct AddTaskButtonsView: View {
         animation: .default)
     private var tasks: FetchedResults<Task>
     
-    let list: Int16 // list to add the task to
-    let project: Project?
-    let tag: Tag?
-    let focus: Bool
+//    let list: Int16 // list to add the task to
+    let defaultFocus: Bool
+    let defaultWaitingFor: Bool
+    let defaultProject: Project?
+    let defaultTag: Tag?
+    
+    @State private var showTaskDetailsView = false
     
     @EnvironmentObject var tab: Tab
     
     var body: some View {
         HStack {
-            addTaskTopButton
-            addTaskToInbox
-            addTaskBottomButton
+            addTaskButton
+//            addTaskTopButton
+//            addTaskToInbox
+//            addTaskBottomButton
+        }
+        .sheet(isPresented: $showTaskDetailsView) {
+//            TaskDetailsView(task: nil, defaultFocus: defaultFocus, defaultWaitingFor: defaultWaitingFor, defaultProject: defaultProject, defaultTag: defaultTag)
+            TaskDetailsView(task: nil, defaultFocus: defaultFocus, defaultWaitingFor: defaultWaitingFor, defaultProject: defaultProject, defaultTag: defaultTag)
         }
     }
     
+    var addTaskButton: some View {
+        Button {
+            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+            impactMed.impactOccurred() // haptic feedback
+            showTaskDetailsView = true
+        } label: {
+            Image(systemName: "plus")
+                .resizable()
+                .frame(width: 20, height: 20)
+                .foregroundColor(.white)
+                .padding(10)
+                .background(.green)
+                .clipShape(Circle())
+        }
+        .padding(.bottom, 8)
+    }
+    /*
     var addTaskTopButton: some View {
         Button {
             let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
@@ -118,11 +143,11 @@ struct AddTaskButtonsView: View {
                 .clipShape(Circle())
         }
         .padding(.bottom, 8)
-    }
+    }*/
 }
 
 struct AddTaskButtonsView_Previews: PreviewProvider {
     static var previews: some View {
-        AddTaskButtonsView(list: 0, project: nil, tag: nil, focus: false)
+        AddTaskButtonsView(defaultFocus: false, defaultWaitingFor: false, defaultProject: Project(), defaultTag: Tag())
     }
 }

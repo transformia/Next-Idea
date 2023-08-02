@@ -10,17 +10,17 @@ import SwiftUI
 struct TagTaskView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
-    @FetchRequest private var tasks: FetchedResults<Task>
+    @FetchRequest private var filteredTasks: FetchedResults<Task>
     
     let tag: Tag
     
     init(tag: Tag) { // filter the task list on the ones linked to the provided tag
         self.tag = tag
-        _tasks = FetchRequest(
+        _filteredTasks = FetchRequest(
             entity: Task.entity(),
             sortDescriptors: [
-                NSSortDescriptor(keyPath: \Task.list, ascending: true),
-                NSSortDescriptor(keyPath: \Task.order, ascending: true) // tasks sorted by order, then by list
+//                NSSortDescriptor(keyPath: \Task.list, ascending: true),
+                NSSortDescriptor(keyPath: \Task.order, ascending: true) // tasks sorted by order
             ],
             predicate: NSPredicate(format: "tags contains %@", tag)
         )
@@ -37,42 +37,20 @@ struct TagTaskView: View {
                 
                 
                 List {
-                    ForEach(tasks.filter({!$0.completed})) { task in
+                    ForEach(filteredTasks.filter({!$0.completed})) { task in
                         HStack {
                             TaskView(task: task)
-                            
-                            Spacer()
-                            
-                            // Show the list's icon:
-                            switch(task.list) {
-                            case 0:
-                                Image(systemName: "tray")
-                            case 1:
-                                Image(systemName: "scope")
-                            case 2:
-                                Image(systemName: "terminal.fill")
-                            case 3:
-                                Image(systemName: "text.append")
-                            default:
-                                Image(systemName: "tray")
-                            }
-                            
-                            // If at least one task is selected, show the selection circle next to each task:
-//                            if tasks.filter({$0.selected}).count > 0 {
-//                                Image(systemName: task.selected ? "circle.fill" : "circle")
-//                                    .foregroundColor(task.selected ? .teal : nil)
-//                                    .onTapGesture {
-//                                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-//                                        impactMed.impactOccurred() // haptic feedback
-//                                        
-//                                        task.selected.toggle()
-//                                        PersistenceController.shared.save()
-//                                    }
-//                            }
                         }
                     }
+                    .onMove(perform: { indices, destination in
+                        moveItem(at: indices, destination: destination, filter: { task in
+                            return task.tags?.contains(tag) ?? false && !task.completed
+                        })
+                    })
                 }
-                .listStyle(PlainListStyle())
+                .padding(EdgeInsets(top: 0, leading: -12, bottom: 0, trailing: -12)) // reduce padding of the list items
+                .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
+    //            .listStyle(PlainListStyle())
                 
                 
 //                if tasks.filter({!$0.completed && $0.ticked}).count > 0 { // if there are ticked tasks displayed, show a button to mark them as complete, and therefore hide them
@@ -90,7 +68,7 @@ struct TagTaskView: View {
 //                }
                 
                 // Add task buttons:
-                AddTaskButtonsView(list: 2, project: nil, tag: tag, focus: false) // add the task to the "Next" list
+                AddTaskButtonsView(defaultFocus: false, defaultWaitingFor: false, defaultProject: nil, defaultTag: tag) // add the task to the "Next" list
             }
             .sheet(isPresented: $showSearchView) {
                 SearchView()
@@ -98,7 +76,7 @@ struct TagTaskView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
-                        if tasks.filter({$0.selected}).count > 0 {
+                        if filteredTasks.filter({$0.selected}).count > 0 {
                             Button {
                                 deselectAllTasks()
                             } label: {
@@ -120,63 +98,54 @@ struct TagTaskView: View {
         }
     }
     
+    private func moveItem(at sets: IndexSet, destination: Int, filter: (Task) -> Bool) {
+        let itemToMove = sets.first!
+        let itemsForMove = filteredTasks.filter({!$0.completed})
+        
+        // If the item is moving down:
+        if itemToMove < destination {
+//            print(itemToMove)
+//            print(destination)
+            var startIndex = itemToMove + 1
+            let endIndex = destination - 1
+//            print(startIndex)
+//            print(endIndex)
+            var startOrder = itemsForMove[itemToMove].order
+//            print(startOrder)
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                itemsForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            itemsForMove[itemToMove].order = startOrder // set the moved task's order to its final value
+        }
+        
+        // Else if the item is moving up:
+        else if itemToMove > destination {
+            var startIndex = destination
+            let endIndex = itemToMove - 1
+            var startOrder = itemsForMove[destination].order + 1
+            let newOrder = itemsForMove[destination].order
+            // Change the order of all tasks between the task to move and the destination:
+            while startIndex <= endIndex {
+                itemsForMove[startIndex].order = startOrder
+                startOrder += 1
+                startIndex += 1
+            }
+            itemsForMove[itemToMove].order = newOrder // set the moved task's order to its final value
+        }
+        
+        PersistenceController.shared.save() // save the item
+    }
+    
     private func deselectAllTasks() {
-        for task in tasks {
+        for task in filteredTasks {
             if task.selected {
                 task.selected = false
             }
         }
         PersistenceController.shared.save()
-    }
-    
-    var addTaskTopButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.filter({$0.list == 2}).first?.order ?? 0) - 1 // set the order to the order of the first item in the default list, minus one
-            task.list = 2 // Next list by default
-            task.name = ""
-            tag.addToTasks(task)
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "arrow.up")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
-    }
-    
-    var addTaskBottomButton: some View {
-        Button {
-            let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-            impactMed.impactOccurred() // haptic feedback
-            // Create a new task:
-            let task = Task(context: viewContext)
-            task.id = UUID()
-            task.order = (tasks.filter({$0.list == 2}).last?.order ?? 0) + 1  // set the order to the order of the last item in the default list, plus one
-            task.list = 2 // Next list by default
-            task.name = ""
-            tag.addToTasks(task)
-            task.createddate = Date()
-            PersistenceController.shared.save()
-        } label: {
-            Image(systemName: "arrow.down")
-                .resizable()
-                .frame(width: 14, height: 14)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.green)
-                .clipShape(Circle())
-        }
-        .padding(.bottom, 8)
     }
 }
 

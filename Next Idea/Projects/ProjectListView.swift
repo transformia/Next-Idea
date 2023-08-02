@@ -15,6 +15,8 @@ struct ProjectListView: View {
         animation: .default)
     private var projects: FetchedResults<Project>
     
+    @EnvironmentObject var weeklyReview: WeeklyReview
+    
     @State private var showProjectDetailsView = false
     @State private var showSettingsView = false
     @State private var showSearchView = false
@@ -24,6 +26,7 @@ struct ProjectListView: View {
         ZStack(alignment: .bottom) {
             
             List {
+                
                 ForEach(projects.filter({!$0.completed})) { project in
                     NavigationLink {
                         ProjectTaskView(project: project)
@@ -32,16 +35,41 @@ struct ProjectListView: View {
                     }
                 }
                 .onMove(perform: moveItem)
-            }
-            .listStyle(PlainListStyle())
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        showSettingsView = true
-                    } label: {
-                        Label("", systemImage: "gear")
+                
+                if projects.filter({$0.completed}).count > 0 {
+                    Section("Completed projects") {
+                        ForEach(projects.filter({$0.completed})) { project in
+                            ProjectView(project: project)
+                        }
                     }
                 }
+            }
+            .padding(EdgeInsets(top: 0, leading: -12, bottom: 0, trailing: -12)) // reduce padding of the list items
+            .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
+//            .listStyle(PlainListStyle())
+            .toolbar {
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    HStack {
+                        Button {
+                            showSettingsView = true
+                        } label: {
+                            Label("", systemImage: "gear")
+                        }
+                        
+                        Button {
+                            weeklyReview.active.toggle()
+                        } label: {
+                            if weeklyReview.active {
+                                Label("", systemImage: "figure.yoga")
+                            }
+                            else {
+                                Label("", systemImage: "figure.mind.and.body")
+                            }
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         
@@ -124,10 +152,10 @@ struct ProjectListView: View {
         } label: {
             Image(systemName: "plus")
                 .resizable()
-                .frame(width: 14, height: 14)
+                .frame(width: 20, height: 20)
                 .foregroundColor(.white)
                 .padding(10)
-                .background(.green)
+                .background(.blue)
                 .clipShape(Circle())
         }
         .padding(.bottom, 8)

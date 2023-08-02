@@ -49,12 +49,12 @@ struct SearchView: View {
                 }
                 .scrollDismissesKeyboard(.immediately) // dismiss the keyboard when scrolling through the search results
                 
-                NavigationLink {
-                    CompletedView()
-                } label: {
-                    Text("Completed tasks")
-                        .padding()
-                }
+//                NavigationLink {
+//                    CompletedView()
+//                } label: {
+//                    Text("Completed tasks")
+//                        .padding()
+//                }
             }
         }
     }

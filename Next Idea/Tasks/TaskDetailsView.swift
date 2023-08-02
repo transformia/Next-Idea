@@ -10,6 +10,11 @@ import SwiftUI
 struct TaskDetailsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Task.order, ascending: true)],
+        animation: .default)
+    private var tasks: FetchedResults<Task> // to be able to add a task to the top or bottom of the list
+    
 //    @FetchRequest(
 //        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.id, ascending: true)],
 //        animation: .default)
@@ -17,24 +22,39 @@ struct TaskDetailsView: View {
     
     @FetchRequest private var tags: FetchedResults<Tag>
     
-    let task: Task
+    let task: Task?
     
-    init(task: Task) { // filter the tag list on the ones that contain the provided task
+    var defaultFocus: Bool
+    var defaultWaitingFor: Bool
+    var defaultProject: Project?
+    var defaultTag: Tag?
+    
+    init(task: Task?, defaultFocus: Bool, defaultWaitingFor: Bool, defaultProject: Project?, defaultTag: Tag?) { // filter the tag list on the ones that contain the provided task
         self.task = task
         _tags = FetchRequest(
             entity: Tag.entity(),
             sortDescriptors: [
                 NSSortDescriptor(keyPath: \Tag.id, ascending: true)
             ],
-            predicate: NSPredicate(format: "tasks CONTAINS %@", task)
+            predicate: NSPredicate(format: "tasks CONTAINS %@", task ?? Task())
         )
+        
+        self.defaultFocus = defaultFocus
+        self.defaultWaitingFor = defaultWaitingFor
+        self.defaultProject = defaultProject
+        self.defaultTag = defaultTag
     }
+    
+    
+    
     
     @Environment(\.dismiss) private var dismiss // used for dismissing this view
     
+    @State private var runOnAppear = true // to prevent the onAppear from running once more when I exit the project of tag picker (or when I switch apps?)
+    
     @State private var name = ""
     @State private var note = ""
-    @State private var list: Int16 = 0
+//    @State private var list: Int16 = 0
     @State private var focus = false
     @State private var date = Date()
     
@@ -42,15 +62,18 @@ struct TaskDetailsView: View {
     @State private var reminderActive = false
     @State private var hideUntilDate = false
     @State private var waitingFor = false
+    @State private var someday = false
     @State private var recurring = false
     @State private var recurrence: Int16 = 1
     @State private var recurrenceType = "days"
+    @State private var nextReviewDate = Date()
     
     @State private var link = ""
     
     @State private var selectedProject: Project?
+    @State private var selectedTags: [Tag?] = []
     
-    @FocusState private var focused: Bool
+    @FocusState private var focusName: Bool
     @FocusState private var focusRecurrence: Bool
     
     @State private var showDeleteAlert = false
@@ -63,89 +86,138 @@ struct TaskDetailsView: View {
             Form {
                 Group {
                     TextField("", text: $name, axis: .vertical)
-                        .focused($focused)
+                        .focused($focusName)
                         .onAppear {
-                            name = task.name ?? ""
-                            note = task.note ?? ""
-                            dateActive = task.dateactive
-                            reminderActive = task.reminderactive
-                            date = task.date ?? Date()
-                            hideUntilDate = task.hideuntildate
-                            waitingFor = task.waitingfor
-                            list = task.list
-                            focus = task.focus
-                            recurring = task.recurring
-                            if task.recurrence != 0 { // so that it doesn't get set to 0 instead of 1 to begin with
-                                recurrence = task.recurrence
+                            if runOnAppear && task != nil { // if this is not a new task, load its attributes
+                                name = task?.name ?? ""
+                                note = task?.note ?? ""
+                                dateActive = task?.dateactive == true
+                                reminderActive = task?.reminderactive == true
+                                date = task?.date ?? Date()
+                                hideUntilDate = task?.hideuntildate == true
+                                waitingFor = task?.waitingfor == true
+                                someday = task?.someday == true
+//                                list = task?.list ?? 0
+                                focus = task?.focus == true
+                                recurring = task?.recurring == true
+                                if task?.recurrence != 0 { // so that it doesn't get set to 0 instead of 1 to begin with
+                                    recurrence = task?.recurrence ?? 1
+                                }
+                                recurrenceType = task?.recurrencetype ?? "days"
+                                link = task?.link ?? ""
+                                nextReviewDate = task?.nextreviewdate ?? Date()
+                                selectedProject = task?.project
+                                selectedTags = task?.tags?.allObjects as! [Tag]
+                                
+                                runOnAppear = false // prevent the onAppear from running again 
                             }
-                            recurrenceType = task.recurrencetype ?? "days"
-                            link = task.link ?? ""
-                            selectedProject = task.project
+                            else if runOnAppear && task == nil { // else if this is a new task, set the default values
+                                focus = defaultFocus
+                                waitingFor = defaultWaitingFor
+                                if defaultProject != nil {
+                                    selectedProject = defaultProject
+                                }
+                                if defaultTag != nil {
+                                    selectedTags = [defaultTag]
+                                }
+                                
+                                focusName = true // focus on the name of the task                                
+                                
+                                runOnAppear = false // prevent the onAppear from running again, so that the focus doesn't keep returning to the task name
+                            }
                         }
                         .onChange(of: name) { _ in
                             // If I press enter:
                             if name.contains("\n") { // if a newline is found
                                 print("New line found. Closing the keyboard")
                                 name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                                focused = false // close the keyboard
+                                focusName = false // close the keyboard
                             }
                         }
                     
-                    TextField("Notes", text: $note, axis: .vertical)
-                        .font(.footnote)
+                    HStack {
+                        
+                        TextField("Notes", text: $note, axis: .vertical)
+                            .font(.footnote)
+                        
+                        if task != nil && note != task?.note ?? "" { // if this is not a new task, and the note has changed, show a button to save it
+                            Button {
+                                task?.note = note
+                                PersistenceController.shared.save()
+                            } label: {
+                                Text("Save")
+                            }
+                        }
+                    }
                     
-                    Picker("List", selection: $list) {
-                        ForEach(lists, id: \.self.0) {
-                            Text($0.1)
-                                .tag($0.0)
-                        }
-                    }
-                    .onChange(of: list) { _ in
-                        if list == 3 {
-                            focus = false // deactivate focus if I set the list to Someday
-                        }
-                    }
+//                    Picker("List", selection: $list) {
+//                        ForEach(lists, id: \.self.0) {
+//                            Text($0.1)
+//                                .tag($0.0)
+//                        }
+//                    }
+//                    .onChange(of: list) { _ in
+//                        if list == 3 {
+//                            focus = false // deactivate focus if I set the list to Someday
+//                        }
+//                    }
                     
                     Toggle("Focus", isOn: $focus)
                         .onChange(of: focus) { _ in
                             if focus {
-                                list = 2 // if I focus on an Inbox or Someday task, move it to Next
+                                someday = false // if I focus on a Someday task, move it to Next
                             }
                         }
                 }
                 
-                NavigationLink {
-                    ProjectPickerView(tasks: [task], save: false)
-                } label: {
-                    if selectedProject == nil {
-                        Text("Project")
-                    }
-                    else {
-                        Text("\(task.project?.name ?? "")")
-                            .onTapGesture {
-                                selectedProject = nil // unselect the project
-                            }
-                    }
-                }
                 
-                NavigationLink {
-                    TagsPickerView(tasks: [task])
-                } label: {
-                    VStack {
-                        if task.tags?.count == 0 {
-                            Text("Tags")
+                Group {
+                
+                    NavigationLink {
+                        ProjectPickerView(selectedProject: $selectedProject, tasks: [])
+                        //                        ProjectPickerView(tasks: [task!], save: false)
+                    } label: {
+                        if selectedProject == nil {
+                            Text("Project")
                         }
                         else {
-                            HStack {
-                                ForEach(tags) { tag in
-                                    Text(tag.name ?? "")
+                            Text(selectedProject?.name ?? "")
+                            //                            Text("\(task?.project?.name ?? "")")
+                                .onTapGesture {
+                                    selectedProject = nil // unselect the project
+                                }
+                        }
+                    }
+                    
+                    
+                    NavigationLink {
+                        TagsPickerView(selectedTags: $selectedTags, tasks: [])
+                    } label: {
+                        VStack {
+//                            if task == nil || task?.tags?.count == 0 {
+                            if selectedTags.count == 0 {
+                                Text("Tags")
+                            }
+                            else {
+                                HStack {
+                                    ForEach(selectedTags as! [Tag]) { tag in
+                                        Text(tag.name ?? "")
+                                    }
                                 }
                             }
                         }
                     }
+                    
+                    Toggle("Waiting for", isOn: $waitingFor)
+                    
+                    Toggle("Someday", isOn: $someday)
+                        .onChange(of: someday) { _ in
+                            if someday {
+                                focus = false // if I move a task to someday, remove focus from it
+                            }
+                        }
+                    
                 }
-                
-                Toggle("Waiting for", isOn: $waitingFor)
                 
                 HStack {
                     Toggle("Date", isOn: $dateActive)
@@ -211,30 +283,57 @@ struct TaskDetailsView: View {
                     .autocorrectionDisabled()
                     .autocapitalization(.none)
                 
-                Button(role: .destructive) {
-                    showDeleteAlert = true
-                } label: {
-                    Label("Delete task", systemImage: "trash")
-                        .foregroundColor(.red)
+                
+                
+                if task != nil { // if this is not a new task
+                    
+                    HStack {
+                        Text("Next review date")
+                        DatePicker("", selection: $nextReviewDate, displayedComponents: .date)
+                    }
+                    
+                    Button(role: .destructive) {
+                        showDeleteAlert = true
+                    } label: {
+                        Label("Delete task", systemImage: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .alert(isPresented: $showDeleteAlert) {
+                        Alert(
+                            title: Text("Are you sure you want to delete this task?"),
+                            message: Text("This cannot be undone"),
+                            primaryButton: .destructive(Text("Delete")) {
+                                withAnimation {
+                                    viewContext.delete(task!)
+                                    PersistenceController.shared.save() // save the changes
+                                    dismiss()
+                                }
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
                 }
-                .alert(isPresented: $showDeleteAlert) {
-                    Alert(
-                        title: Text("Are you sure you want to delete this task?"),
-                        message: Text("This cannot be undone"),
-                        primaryButton: .destructive(Text("Delete")) {
-                            withAnimation {
-                                viewContext.delete(task)
-                                PersistenceController.shared.save() // save the changes
-                                dismiss()
-                            }
-                        },
-                        secondaryButton: .cancel()
-                    )
+                if task == nil { // if this is a new task
+                    
+                    HStack {
+                        Button() {
+                            saveTask(toTop: true)
+                        } label: {
+                            Label("Add to top", systemImage: "arrow.up.circle.fill")
+                        }
+                        
+                        Button() {
+                            saveTask(toTop: false)
+                        } label: {
+                            Label("Add to bottom", systemImage: "arrow.down.circle.fill")
+                        }
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
                 }
-                if taskHasChanged() {
+                else if taskHasChanged() {
                     
                     Button() {
-                        saveTask()
+                        saveTask(toTop: true)
                     } label: {
                         Label("Save changes", systemImage: "externaldrive.fill")
                     }
@@ -281,9 +380,9 @@ struct TaskDetailsView: View {
                         }
                     }
                      */
-                    if task.link != link {
-                        Text("Link has changed from \(task.link ?? "") to \(link)")
-                    }
+//                    if task?.link != link {
+//                        Text("Link has changed from \(task?.link ?? "") to \(link)")
+//                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -299,30 +398,33 @@ struct TaskDetailsView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        saveTask()
+                        saveTask(toTop: true)
                     } label: {
                         Text("Save")
                     }
                 }
             }
         }
-        .interactiveDismissDisabled(taskHasChanged()) // prevent accidental dismissal of the sheet if any value has been modified (except the project, because that is modified in the project picker, but not saved -> could be an issue). I'm only disabling dismiss based on the date if task.date is not nil, otherwise it will always get stuck on new tasks
+        .interactiveDismissDisabled(taskHasChanged()) // prevent accidental dismissal of the sheet if any value has been modified. I'm only disabling dismiss based on the date if task.date is not nil, otherwise it will always get stuck on new tasks
     }
     
     private func taskHasChanged() -> Bool {
-        if task.name != name ||
-            task.note != note ||
-            task.list != list ||
-            task.focus != focus ||
-            (task.date != date && task.date != nil) ||
-            task.dateactive != dateActive ||
-            task.reminderactive != reminderActive ||
-            task.hideuntildate != hideUntilDate ||
-            task.waitingfor != waitingFor ||
-            task.recurring != recurring ||
-            task.recurrence != recurrence ||
-            task.recurrencetype != recurrenceType ||
-            task.link != link
+        if task?.name != name ||
+            task?.note != note ||
+//            task?.list != list ||
+            task?.focus != focus ||
+            task?.project != selectedProject ||
+            task?.tags?.allObjects as! [Tag] != selectedTags ||
+            (task?.date != date && task?.date != nil) ||
+            task?.dateactive != dateActive ||
+            task?.reminderactive != reminderActive ||
+            task?.hideuntildate != hideUntilDate ||
+            task?.waitingfor != waitingFor ||
+            task?.recurring != recurring ||
+            task?.recurrence != recurrence ||
+            task?.recurrencetype != recurrenceType ||
+            task?.link != link ||
+            task?.nextreviewdate != nextReviewDate
         {
             return true
         }
@@ -331,31 +433,80 @@ struct TaskDetailsView: View {
         }
     }
     
-    private func saveTask() {
-        task.name = name
-        task.note = note
-        task.dateactive = dateActive
-        task.reminderactive = reminderActive
-        
-        // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
-        if task.date != date {
-            task.date = date
-            task.cancelNotification()
-            if reminderActive {
-                task.createNotification()
+    private func saveTask(toTop: Bool) {
+        if task == nil { // if this is a new task, create it and set its attributes
+            let task = Task(context: viewContext)
+            task.id = UUID()
+            task.order = toTop ? (tasks.first?.order ?? 0) - 1 : (tasks.last?.order ?? 0) + 1
+            task.name = name
+            task.note = note
+            task.dateactive = dateActive
+            task.reminderactive = reminderActive
+            
+            // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
+            if task.date != date {
+                task.date = date
+                task.cancelNotification()
+                if reminderActive {
+                    task.createNotification()
+                }
             }
+            task.hideuntildate = hideUntilDate
+            task.waitingfor = waitingFor
+            task.someday = someday
+//            task.list = list
+            task.project = selectedProject // so that the project is cleared if I've cleared it
+//            task.tags = NSSet(array: selectedTags.compactMap { $0 as AnyObject })
+//            task.tags = selectedTags
+            for tag in selectedTags {
+                tag?.addToTasks(task)
+            }
+            task.focus = focus
+            task.recurring = recurring
+            task.recurrence = recurrence
+            task.recurrencetype = recurrenceType
+            task.link = link
+            task.nextreviewdate = nextReviewDate
+            
+            task.modifieddate = Date()
         }
-        task.hideuntildate = hideUntilDate
-        task.waitingfor = waitingFor
-        task.list = list
-        task.project = selectedProject // so that the project is cleared if I've cleared it
-        task.focus = focus
-        task.recurring = recurring
-        task.recurrence = recurrence
-        task.recurrencetype = recurrenceType
-        task.link = link
         
-        task.modifieddate = Date()
+        else { // else if this is an existing task, update its attributes
+            task?.name = name
+            task?.note = note
+            task?.dateactive = dateActive
+            task?.reminderactive = reminderActive
+            
+            // If the date has been modified, cancel the notification if there is one, and create one if there is a reminder time
+            if task?.date != date {
+                task?.date = date
+                task?.cancelNotification()
+                if reminderActive {
+                    task?.createNotification()
+                }
+            }
+            task?.hideuntildate = hideUntilDate
+            task?.waitingfor = waitingFor
+            task?.someday = someday
+//            task?.list = list
+            task?.project = selectedProject
+            task?.tags = NSSet(array: selectedTags.compactMap { $0 as AnyObject })
+//            for tag in selectedTags {
+//                tag?.addToTasks(task ?? Task())
+//            }
+            if task?.focus != focus { // if the focus has changed, move the task to the top of the Next list or the bottom of the Focused list, and save the change to the focus
+                task?.order = !focus ? (tasks.first?.order ?? 0) - 1 : (tasks.last?.order ?? 0) + 1
+                task?.focus = focus
+            }
+            task?.recurring = recurring
+            task?.recurrence = recurrence
+            task?.recurrencetype = recurrenceType
+            task?.link = link
+            task?.nextreviewdate = nextReviewDate
+            
+            task?.modifieddate = Date()
+        }
+        
         PersistenceController.shared.save()
         dismiss() // dismiss the sheet
     }

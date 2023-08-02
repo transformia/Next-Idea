@@ -24,6 +24,8 @@ struct TaskView: View {
     
     let task: Task
     
+    @EnvironmentObject var weeklyReview: WeeklyReview
+    
     init(task: Task) { // filter the tag list on the ones that contain the provided task
         self.task = task
         _tags = FetchRequest(
@@ -49,7 +51,21 @@ struct TaskView: View {
         VStack(alignment: HorizontalAlignment.leading) {
             HStack {
                 
-                if(UserDefaults.standard.bool(forKey: "Checkbox")) { // if the checkbox is activated in the settings
+                if weeklyReview.active {
+                    Image(systemName: Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? "figure.yoga" : "figure.mind.and.body")
+                        .foregroundColor(Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? .green : nil)
+                        .onTapGesture { // if the task has a next review date today or in the past, push it forward by 7 days. Else set it back to today
+                            if Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) {
+                                task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: task.nextreviewdate ?? Date())
+                            }
+                            else {
+                                task.nextreviewdate = Date()
+                            }
+                            PersistenceController.shared.save()
+                        }
+                }
+                
+                else if(UserDefaults.standard.bool(forKey: "Checkbox")) { // else if the checkbox is activated in the settings
                     Image(systemName: task.ticked ? "checkmark.circle.fill" : "circle")
                         .resizable()
                         .frame(width: 24.0, height: 24.0)
@@ -73,7 +89,11 @@ struct TaskView: View {
 //                                editable = true // make it possible to edit new tasks when they are created
 //                            }
 //                        }
-                        .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
+                        .foregroundColor(task.ticked && !task.completed ? .gray // color the task if it is ticked, but not if it is already in the completed tasks view.
+                                         : weeklyReview.active && (Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date())) ? .green // color the task green if weekly review is active, and the next review date is in the future
+                                         : task.selected ? .teal // color the task teal if it is selected
+                                         : task.waitingfor ? .gray : nil // color the task if it is waiting for
+                        )
                         .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                 }
                 
@@ -198,7 +218,7 @@ struct TaskView: View {
             }
         }
         .onTapGesture { // make the whole VStack tappable for editing the task name, or selecting / deselecting the task
-            print("Tapping on task")            
+//            print("Tapping on task")
             if tasks.filter({$0.selected}).count > 0 { // if at least one task is already selected, tapping on another task selects it, and tapping on a selected task deselects it
                 let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                 impactMed.impactOccurred() // haptic feedback
@@ -225,17 +245,28 @@ struct TaskView: View {
 //        }
         .swipeActions(edge: .leading) {
             
-            Button { // tick this task if it is not recurring, otherwise increment its date
-                completeTask(task: task)
-            } label: {
-                Label("Complete", systemImage: "checkmark")
-            }
-            .tint(.green)
+//            if weeklyReview.active {
+//                Button { // mark this task as reviewed
+//                    task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: task.nextreviewdate ?? Date())
+//                    PersistenceController.shared.save()
+//                } label: {
+//                    Label("Reviewed", systemImage: "figure.mind.and.body")
+//                }
+//                .tint(.green)
+//            }
+//
+//            else {
+                Button { // tick this task if it is not recurring, otherwise increment its date
+                    completeTask(task: task)
+                } label: {
+                    Label("Complete", systemImage: "checkmark")
+                }
+                .tint(.green)
+//            }
             
             // Move the task to the top or to the bottom:
-            
             Button {
-                task.order = (tasks.filter({$0.list == task.list && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                task.order = (tasks.filter({!$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task minus 1
                 PersistenceController.shared.save() // save the item
             } label: {
                 Label("Move to top", systemImage: "arrow.up")
@@ -243,7 +274,7 @@ struct TaskView: View {
             .tint(.blue)
             
             Button {
-                task.order = (tasks.filter({$0.list == task.list && !$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task of the destination list plus 1
+                task.order = (tasks.filter({!$0.completed}).last?.order ?? 0) + 1 // set the order of the task to the order of the last uncompleted task plus 1
                 PersistenceController.shared.save() // save the item
             } label: {
                 Label("Move to bottom", systemImage: "arrow.down")
@@ -297,12 +328,15 @@ struct TaskView: View {
             
             // Make the task focused / non focused:
             Button {
-                task.list = 2 // move the task to the Next list
                 task.focus.toggle() // toggle focus
-                // If I'm removing focus from a task, put it at the top of the Next list:
-                if !task.focus {
-                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the Next list minus 1
-                }
+                // Put the task at the top of the Next list or at the bottom of the Focused list:
+                task.order = !task.focus ? (tasks.first?.order ?? 0) - 1 : (tasks.last?.order ?? 0) + 1
+//                if !task.focus {
+//                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the Next list minus 1
+//                }
+//                else {
+//                    task.someday = false // move the task to the Next list
+//                }
                 task.modifieddate = Date()
                 PersistenceController.shared.save() // save the item
             } label: {
@@ -310,11 +344,11 @@ struct TaskView: View {
             }
             .tint(.green)
             
-            if task.list != 2 {
+            if task.someday {
                 // Move the task to Next:
                 Button {
-                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
-                    task.list = 2
+                    task.order = (tasks.filter({!$0.someday && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                    task.someday = false
                     task.modifieddate = Date()
                     PersistenceController.shared.save() // save the item
                 } label: {
@@ -323,11 +357,11 @@ struct TaskView: View {
                 .tint(.blue)
             }
             
-            if task.list != 3 {
+            if !task.someday {
                 // Move the task to Someday:
                 Button {
-                    task.order = (tasks.filter({$0.list == 3 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
-                    task.list = 3
+                    task.order = (tasks.filter({$0.someday && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                    task.someday = true
                     task.focus = false
                     task.modifieddate = Date()
                     PersistenceController.shared.save() // save the item
@@ -350,7 +384,7 @@ struct TaskView: View {
 //            }
         }
         .sheet(isPresented: $showTaskDetails) {
-            TaskDetailsView(task: task)
+            TaskDetailsView(task: task, defaultFocus: false, defaultWaitingFor: false, defaultProject: nil, defaultTag: nil)
         }
     }
     

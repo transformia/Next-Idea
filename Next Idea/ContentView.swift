@@ -8,9 +8,14 @@
 import SwiftUI
 import CoreData
 import UserNotifications
+import EventKit // to be able to access reminders and calendars
 
 final class Tab: ObservableObject {
-    @Published var selection: Int = 2
+    @Published var selection: Int = 1
+}
+
+final class WeeklyReview: ObservableObject {
+    @Published var active = false
 }
 
 struct ContentView: View {
@@ -21,16 +26,54 @@ struct ContentView: View {
         animation: .default)
     private var tasks: FetchedResults<Task> // to be able to verify notifications and count tasks
     
+    class EventKitManager: ObservableObject { // to access reminders and calendars
+        var eventStore = EKEventStore()
+        @Published var reminderLists: [EKCalendar] = []
+        @Published var importActive = false
+        @Published var selectedList: EKCalendar? = nil
+        @Published var reminders: [EKReminder] = []
+        
+        init() {
+            if EKEventStore.authorizationStatus(for: .reminder) == .authorized { // if the user has authorized the import of reminders, get the reminder list from Apple Reminders:
+                getReminderCalendars()
+            }
+        }
+        
+        func requestRemindersAccess() {
+            eventStore.requestAccess(to: .reminder) { success, error in
+                self.eventStore = EKEventStore()
+            }
+        }
+        
+        func getReminderCalendars() {
+            self.reminderLists = eventStore.calendars(for: .reminder)
+        }
+        
+        func completeReminder(reminder: EKReminder) {
+            reminder.isCompleted = true
+            
+            do {
+                try eventStore.save(reminder, commit: true)
+            } catch {
+                print("Saving reminder failed with error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    @StateObject var eventKitManager = EventKitManager() // create the object
+    
     @StateObject var tab = Tab()
+    
+    @StateObject var weeklyReview = WeeklyReview()
     
     @State private var showSearchView = false
 
     var body: some View {
         TabView(selection: $tab.selection) {
             
-            ListView(list: 0, showDeferred: false)
+            HomeView()
                 .tabItem {
-                    Label("Inbox", systemImage: "tray")
+                    Label("Home", systemImage: "house")
                 }
                 .tag(0)
             
@@ -42,17 +85,11 @@ struct ContentView: View {
             }
             .tag(1)
             
-            ListView(list: 2, showDeferred: false)
+            ListView(title: "All tasks")
                 .tabItem {
-                    Label("Next", systemImage: "terminal.fill")
+                    Label("All tasks", systemImage: "play")
                 }
                 .tag(2)
-            
-            ListView(list: 3, showDeferred: false)
-                .tabItem {
-                    Label("Someday", systemImage: "text.append")
-                }
-                .tag(3)
             
             NavigationStack {
                 TagListView()
@@ -60,163 +97,20 @@ struct ContentView: View {
             .tabItem {
                 Label("Tags", systemImage: "tag")
             }
-            .tag(4)
-            
+            .tag(3)
         }
+        .onAppear {
+            // Import new reminders from Apple Reminders - once on startup, then every x minutes while the app is in the foreground, and whenever it returns from the background:
             
-//            NavigationLink {
-//                ListView(list: 1, showDeferred: false)
-//            } label: {
-//                HStack {
-//                    Text("Now")
-//                    Spacer()
-//                    Text("\(countTasks(list: 1))")
-//                }
-//            }
+            importReminders()
             
-//            ListView(list: 1, showDeferred: false)
-//                .tabItem {
-//                    Label("Now", systemImage: "scope")
-//                }
-//                .tag(2)
-            
-            
-//            FocusView()
-//                .tabItem {
-//                    Label("Focus", systemImage: "scope")
-//                }
-            
-//            NavigationStack {
-//                List {
-                    
-//                    NavigationLink {
-//                        ListView(list: 0, showDeferred: false)
-//                    } label: {
-//                        HStack {
-//                            Text("Inbox")
-//                            Spacer()
-//                            Text("\(countTasks(list: 0))")
-//                        }
-//                    }
-                    
-//                    NavigationLink {
-//                        ListView(list: 1, showDeferred: false)
-//                    } label: {
-//                        HStack {
-//                            Text("Now")
-//                            Spacer()
-//                            Text("\(countTasks(list: 1))")
-//                        }
-//                    }
-                    
-//
-//                    NavigationLink {
-//                        ListView(list: 2, showDeferred: false)
-//                    } label: {
-//                        HStack {
-//                            Text("Next")
-//                            Spacer()
-//                            Text("\(countTasks(list: 2))")
-//                        }
-//                    }
-//
-//                    NavigationLink {
-//                        ListView(list: 3, showDeferred: false)
-//                    } label: {
-//                        HStack {
-//                            Text("Someday")
-//                            Spacer()
-//                            Text("\(countTasks(list: 3))")
-//                        }
-//                    }
-//
-//                    NavigationLink {
-//                        WaitingForView()
-//                    } label: {
-//                        HStack {
-//                            Text("Waiting for")
-//                            Spacer()
-//                            Text("\(countTasks(list: 4))")
-//                        }
-//                    }
-//                }
-//                .navigationTitle("Tasks")
-//                .navigationBarTitleDisplayMode(.inline)
-//                .sheet(isPresented: $showSearchView) {
-//                    SearchView()
-//                }
-//                .toolbar {
-//                    ToolbarItem(placement: .navigationBarTrailing) {
-//                        Button {
-//                            showSearchView.toggle()
-//                        } label: {
-//                            Label("", systemImage: "magnifyingglass")
-//                        }
-//                    }
-//                }
-//            }
-//            .tabItem {
-//                Label("Tasks", systemImage: "play.fill")
-//            }
-//            .tag(3)
-            
-            
-//            NavigationStack {
-//                TagListView()
-//            }
-//                .tabItem {
-//                    Label("Tags", systemImage: "tag")
-//                }
-//                .tag(4)
-            
-//            SearchView()
-//                .tabItem {
-//                    Label("Search", systemImage: "magnifyingglass")
-//                }
-//                .tag(5)
-            
-//            HomeView()
-//                .tabItem {
-//                    Label("Home", systemImage: "house")
-//                }
-//                .tag(4)
-//        }
-        
-        /*
-        TabView(selection: $tab.selection) {
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house")
-                }
-                .tag(9)
-            
-            ListView(list: 0, showDeferred: false)
-                .tabItem {
-                    Label("Inbox", systemImage: "tray")
-                }
-                .tag(0)
-            
-            ListView(list: 1, showDeferred: false)
-                .tabItem {
-                    Label("Now", systemImage: "scope")
-                }
-                .tag(1)
-            
-            ListView(list: 2, showDeferred: false)
-                .tabItem {
-                    Label("Next", systemImage: "terminal.fill")
-                }
-                .tag(2)
-            
-            ListView(list: 3, showDeferred: false)
-                .tabItem {
-                    Label("Someday", systemImage: "text.append")
-                }
-                .tag(3)
+            Timer.scheduledTimer(withTimeInterval: 1 * 60, repeats: true) { timer in
+                importReminders()
+            }
         }
-        */
-        
+        .environmentObject(eventKitManager) // put the reminder lists and reminders in the environment
         .environmentObject(tab) // make the tab selection available to other views
+        .environmentObject(weeklyReview) // make the weekly review activation status available to other views
         .onAppear {
             // Verify if some notifications need to be cancelled or created:
             verifyNotifications()
@@ -227,15 +121,6 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
-    }
-    
-    private func countTasks(list: Int) -> Int {
-        if list != 4 { // if the list passed is not a 4, which is the Waiting for tasks, count the number of tasks in the list
-            return tasks.filter({$0.list == list && !$0.completed}).count
-        }
-        else { // count the number of tasks that are in Waiting for state
-            return tasks.filter({$0.waitingfor && !$0.completed}).count
-        }
     }
     
     private func verifyNotifications() { // go through notifications and items and check that they match, in case something has been changed on another device
@@ -288,6 +173,76 @@ struct ContentView: View {
             })
         }
     }
+    
+    private func importReminders() { // import new reminders from Apple Reminders
+//        print("Attempting to import reminders")
+        eventKitManager.importActive = UserDefaults.standard.bool(forKey: "RemindersImportActive")
+        
+//        print("Import active: \(eventKitManager.importActive)")
+        
+        if eventKitManager.importActive {
+            
+            let selectedListId = UserDefaults.standard.string(forKey: "RemindersSelectedList")
+            if selectedListId != nil && eventKitManager.reminderLists.filter({$0.calendarIdentifier == selectedListId}).count > 0 { // if there is a list saved, find it in the array of lists fetched from Reminders, if there are any:
+                eventKitManager.selectedList = eventKitManager.reminderLists.filter({$0.calendarIdentifier == selectedListId})[0]
+            }
+//            print("Selected list: \(eventKitManager.selectedList?.title ?? "")")
+            if eventKitManager.selectedList != nil { // if the import is active in the settings, and a default list has been selected
+                let predicate = eventKitManager.eventStore.predicateForIncompleteReminders(withDueDateStarting: nil, ending: nil, calendars: [eventKitManager.selectedList!])
+                
+                eventKitManager.eventStore.fetchReminders(matching: predicate) { results in
+                    if let results = results {
+                        DispatchQueue.main.async {
+                            eventKitManager.reminders = results
+//                            print("Importing \(eventKitManager.reminders.count) reminders from list \(eventKitManager.selectedList!.title)")
+                            
+                            for reminder in eventKitManager.reminders {
+//                                print(reminder.title ?? "")
+                                // Create a new item in the inbox, and save it:
+                                let task = Task(context: viewContext)
+                                task.id = UUID()
+                                task.order = (tasks.first?.order ?? 0) - 1 // add it to the top
+                                task.name = reminder.title ?? ""
+                                task.dateactive = false
+                                task.reminderactive = false
+                                task.hideuntildate = false
+                                task.waitingfor = false
+                                task.someday = false
+                                task.focus = false
+                                task.recurring = false
+                                task.recurrence = 1
+                                task.recurrencetype = "days"
+                                task.link = ""
+                                task.nextreviewdate = Date()
+                                task.modifieddate = Date()
+                                
+                                // Complete the task in Reminders:
+                                eventKitManager.completeReminder(reminder: reminder)
+                            }
+                            
+                            // Save the new tasks:
+                            PersistenceController.shared.save()
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+//        for reminder in eventKitManager.reminders {
+//            print(reminder.title ?? "")
+//            // Create a new item in the inbox, and save it:
+//            let item = Item(context: viewContext)
+//            let itemOrder: Int64
+//            itemOrder = (items.first?.order ?? 0) - 1 // add it to the top
+//            item.populate(name: reminder.title ?? "", list: "Inbox", order: itemOrder, project: nil, itemlabel: nil, url: "", linkname: "", dateActive: false, reminderActive: false, deferred: false, recurrenceActive: false, recurrence: 0, recurrenceType: "days", date: Date(), reminderTime: Date(), goodHabit: true, points: 0, perMinute: false, multipleOccurrences: false)
+////            PersistenceController.shared.save()
+//
+//            // Complete the task in Reminders:
+////            eventKitManager.completeReminder(reminder: reminder)
+//        }
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {

@@ -36,28 +36,34 @@ struct IconPickerView: View {
     var body: some View {
         VStack {
             HStack {
+                ImageIcon(systemName: "1.circle.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "2.circle.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "3.circle.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "4.circle.fill", selectedIcon: $selectedIcon)
+            }
+            HStack {
                 ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
                 ImageIcon(systemName: "shift.fill", selectedIcon: $selectedIcon)
                 ImageIcon(systemName: "play.fill", selectedIcon: $selectedIcon)
                 ImageIcon(systemName: "star.fill", selectedIcon: $selectedIcon)
             }
             HStack {
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "opticaldisc.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "dollarsign.circle.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "clock.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "calendar.circle.fill", selectedIcon: $selectedIcon)
             }
             HStack {
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "suit.heart.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "suit.diamond.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "suit.spade.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "suit.club.fill", selectedIcon: $selectedIcon)
             }
             HStack {
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "pencil.circle.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "figure.2.arms.open", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "highlighter", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "folder.fill", selectedIcon: $selectedIcon)
             }
         }
     }

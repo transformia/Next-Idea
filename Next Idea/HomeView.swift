@@ -7,55 +7,224 @@
 
 import SwiftUI
 
+
+
 struct HomeView: View {
+    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Task.order, ascending: true)],
+        animation: .default)
+    private var tasks: FetchedResults<Task> // to be able to count the tasks in each tile
+    
+    @EnvironmentObject var weeklyReview: WeeklyReview
+    
+    @State private var showSettingsView = false
+    @State private var showSearchView = false
+    
     var body: some View {
         NavigationStack {
             List {
                 
-                NavigationLink {
-                    SettingsView()
-                } label: {
-                    Text("Settings")
+                Group {
+                    
+                    NavigationLink {
+                        ListView(title: "All tasks")
+                    } label: {
+                        HStack {
+                            Label("All tasks", systemImage: "list.bullet")
+                            Spacer()
+                            Text("\(countTasks(filter: ""))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Inbox")
+                    } label: {
+                        HStack {
+                            Label("Inbox", systemImage: "tray")
+                            Spacer()
+                            Text("\(countTasks(filter: "Inbox"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Focus")
+                    } label: {
+                        HStack {
+                            Label("Focus", systemImage: "scope")
+                            Spacer()
+                            Text("\(countTasks(filter: "Focus"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Due")
+//                        DueTodayView()
+                    } label: {
+                        HStack {
+                            Label("Due and overdue", systemImage: "calendar")
+                            Spacer()
+                            Text("\(countDueOverdueTasks())")
+                        }
+                    }
+                    
                 }
                 
-                NavigationLink {
-                    DueTodayView()
-                } label: {
-                    Text("Due and overdue")
-                }
-                
-                NavigationLink {
-                    ProjectListView()
-                } label: {
-                    Text("Projects")
-                }
-                
-                NavigationLink {
-                    TagListView()
-                } label: {
-                    Text("Tags")
-                }
-                
-                NavigationLink {
-                    WaitingForView()
-                } label: {
-                    Text("Waiting for")
-                }
-                
-                NavigationLink {
-                    SearchView()
-                } label: {
-                    Text("Search")
-                }
-                
-                NavigationLink {
-                    CompletedView()
-                } label: {
-                    Text("Completed tasks")
+                Group {
+                    
+                    NavigationLink {
+                        ListView(title: "Next")
+                    } label: {
+                        HStack {
+                            Label("Next actions", systemImage: "terminal.fill")
+                            Spacer()
+                            Text("\(countTasks(filter: "Next"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Waiting for")
+//                        WaitingForView()
+                    } label: {
+                        HStack {
+                            Label("Waiting for", systemImage: "stopwatch")
+                            Spacer()
+                            Text("\(countTasks(filter: "Waiting for"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Deferred")
+                    } label: {
+                        HStack {
+                            Label("Deferred", systemImage: "text.append")
+                            Spacer()
+                            Text("\(countTasks(filter: "Deferred"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "Someday")
+                    } label: {
+                        HStack {
+                            Label("Someday", systemImage: "text.append")
+                            Spacer()
+                            Text("\(countTasks(filter: "Someday"))")
+                        }
+                    }
+                    
+                    NavigationLink {
+                        ListView(title: "To be reviewed")
+                    } label: {
+                        HStack {
+                            Label("To be reviewed__", systemImage: "figure.mind.and.body")
+                        }
+                    }
+                    
+                    
+                    NavigationLink {
+                        SearchView()
+                    } label: {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
+                    
+                    NavigationLink {
+                        CompletedView()
+                    } label: {
+                        Label("Completed tasks", systemImage: "checkmark.circle")
+                    }
+                    
                 }
                 
             }
+            .listStyle(PlainListStyle())
+            .toolbar {
+                
+                ToolbarItem(placement: .navigationBarLeading) {
+                    HStack {
+                        Button {
+                            showSettingsView = true
+                        } label: {
+                            Label("", systemImage: "gear")
+                        }
+                        
+                        Button {
+                            weeklyReview.active.toggle()
+                        } label: {
+                            if weeklyReview.active {
+                                Label("", systemImage: "figure.yoga")
+                            }
+                            else {
+                                Label("", systemImage: "figure.mind.and.body")
+                            }
+                        }
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack {
+                        Button {
+                            showSearchView.toggle()
+                        } label: {
+                            Label("", systemImage: "magnifyingglass")
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Tasks")
+            .navigationBarTitleDisplayMode(.inline)
+            
+            
+            // Add task buttons:
+            AddTaskButtonsView(defaultFocus: false, defaultWaitingFor: false, defaultProject: nil, defaultTag: nil)
+            
+            
         }
+        .sheet(isPresented: $showSettingsView) {
+            SettingsView()
+        }
+        .sheet(isPresented: $showSearchView) {
+            SearchView()
+        }
+    }
+    
+    private func countTasks(filter: String) -> Int {
+        if filter != "" {
+            return tasks.filter({$0.filterTasks(filter: filter)}).count
+        }
+        else {
+            return tasks.filter({!$0.completed}).count
+        }
+    }
+    
+//    private func countTasks(list: Int?, showOnlyFocus: Bool) -> Int {
+//        if list != nil {
+//            return tasks.filter({
+//                $0.list == list ?? 0 // task is in the list
+//                && (!showOnlyFocus || $0.focus) // I'm not showing only focus, or the task is focused
+//                && !$0.completed // the task is not completed
+//                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+//                    }).count
+//        }
+//        else {
+//            return tasks.filter({!$0.completed}).count
+//        }
+//    }
+    
+    private func countDueOverdueTasks() -> Int {
+        return tasks.filter({
+            !$0.completed
+            && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())
+            && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+        }).count
+    }
+    
+    private func countWaitingForTasks() -> Int {
+        return tasks.filter({
+            !$0.completed
+            && $0.waitingfor
+            && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+        }).count
     }
 }
 

@@ -15,6 +15,8 @@ struct ProjectView: View {
         animation: .default)
     private var tasks: FetchedResults<Task> // to be able to count the tasks in each project
     
+    @EnvironmentObject var weeklyReview: WeeklyReview
+    
     let project: Project
     
 //    @State private var name = ""
@@ -63,6 +65,17 @@ struct ProjectView: View {
 //                    }
 //            }
         }
+        .swipeActions(edge: .leading) {
+            // Complete or uncomplete the project - if it has no more uncompleted tasks:
+            if (project.tasks?.allObjects as! [Task]).filter({!$0.completed}).count == 0 {
+                Button {
+                    completeProject()
+                } label: {
+                    Label("Complete", systemImage: "checkmark")
+                }
+                .tint(.green)
+            }
+        }
         .swipeActions(edge: .trailing) {
             // Edit the project details:
             Button {
@@ -77,8 +90,26 @@ struct ProjectView: View {
         }
     }
     
+    private func completeProject() {
+        project.completed.toggle()
+        PersistenceController.shared.save()
+    }
+    
     private func countTasks(project: Project) -> Int {
-        return tasks.filter({$0.project == project && !$0.completed}).count
+//        for task in tasks {
+//            if
+//                task.project == project
+//                && !task.completed
+//                && ( !weeklyReview.active || Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+//            {
+//                print(task.name ?? "")
+//            }
+//        }
+        return tasks.filter({
+            $0.project == project
+            && !$0.completed
+            && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+        }).count
     }
 }
 

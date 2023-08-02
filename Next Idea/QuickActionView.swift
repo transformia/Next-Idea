@@ -26,32 +26,33 @@ struct QuickActionView: View {
                 HStack {
                     
                     // Quick actions to move tasks to other lists:
-                    Button {
-                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-                        impactMed.impactOccurred() // haptic feedback
-                        for task in tasks.filter({$0.selected}) {
-                            task.list = 0
-                            task.modifieddate = Date()
-                        }
-                        PersistenceController.shared.save()
-                        deselectAllTasks()
-                    } label: {
-                        Image(systemName: "tray")
-                            .resizable()
-                            .frame(width: 26, height: 26)
-                            .foregroundColor(.black)
-                            .padding(10)
-                    }
+//                    Button {
+//                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+//                        impactMed.impactOccurred() // haptic feedback
+//                        for task in tasks.filter({$0.selected}) {
+//                            task.list = 0
+//                            task.modifieddate = Date()
+//                        }
+//                        PersistenceController.shared.save()
+//                        deselectAllTasks()
+//                    } label: {
+//                        Image(systemName: "tray")
+//                            .resizable()
+//                            .frame(width: 26, height: 26)
+//                            .foregroundColor(.black)
+//                            .padding(10)
+//                    }
                     
-                    Button {
+                    Button { // makes the tasks focused, removes someday
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
-                            task.list = 1
+                            task.focus = true
+                            task.someday = false
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-                        deselectAllTasks()
+//                        deselectAllTasks()
                     } label: {
                         Image(systemName: "scope")
                             .resizable()
@@ -60,15 +61,16 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     
-                    Button {
+                    Button { // removes focus and someday
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
-                            task.list = 2
+                            task.focus = false
+                            task.someday = false
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-                        deselectAllTasks()
+//                        deselectAllTasks()
                     } label: {
                         Image(systemName: "terminal.fill")
                             .resizable()
@@ -77,15 +79,16 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     
-                    Button {
+                    Button { // sets to someday, remove focus
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
-                            task.list = 3
+                            task.someday = true
+                            task.focus = false
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-                        deselectAllTasks()
+//                        deselectAllTasks()
                     } label: {
                         Image(systemName: "text.append")
                             .resizable()
@@ -93,6 +96,24 @@ struct QuickActionView: View {
                             .foregroundColor(.black)
                             .padding(10)
                     }
+                    
+                    Button { // sets to waiting for
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
+                        for task in tasks.filter({$0.selected}) {
+                            task.waitingfor = true
+                            task.modifieddate = Date()
+                        }
+                        PersistenceController.shared.save()
+//                        deselectAllTasks()
+                    } label: {
+                        Image(systemName: "stopwatch")
+                            .resizable()
+                            .frame(width: 26, height: 26)
+                            .foregroundColor(.black)
+                            .padding(10)
+                    }
+                    
                 }
 //                        .padding(.bottom, 120)
                 
@@ -136,10 +157,10 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     .sheet(isPresented: $showTagPicker) {
-                        TagsPickerView(tasks: tasks.filter({$0.selected}))
+//                        TagsPickerView(tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showProjectPicker) {
-                        ProjectPickerView(tasks: tasks.filter({$0.selected}), save: true)
+//                        ProjectPickerView(tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showDatePicker) {
                         DatePickerView(tasks: tasks.filter({$0.selected}))
