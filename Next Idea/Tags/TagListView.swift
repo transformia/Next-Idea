@@ -41,7 +41,7 @@ struct TagListView: View {
             .onDelete(perform: deleteItem)
             .onMove(perform: moveItem)
         }
-        .padding(EdgeInsets(top: 0, leading: -12, bottom: 0, trailing: -12)) // reduce padding of the list items
+        .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
         .navigationTitle("Tags")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showSettingsView) {

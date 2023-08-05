@@ -67,7 +67,7 @@ struct ProjectView: View {
         }
         .swipeActions(edge: .leading) {
             // Complete or uncomplete the project - if it has no more uncompleted tasks:
-            if (project.tasks?.allObjects as! [Task]).filter({!$0.completed}).count == 0 {
+            if !project.singleactions && (project.tasks?.allObjects as! [Task]).filter({!$0.completed}).count == 0 {
                 Button {
                     completeProject()
                 } label: {

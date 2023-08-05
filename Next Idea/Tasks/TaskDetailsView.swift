@@ -15,6 +15,11 @@ struct TaskDetailsView: View {
         animation: .default)
     private var tasks: FetchedResults<Task> // to be able to add a task to the top or bottom of the list
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Project.order, ascending: true)],
+        animation: .default)
+    private var projects: FetchedResults<Project> // to be able to select the Single actions project
+    
 //    @FetchRequest(
 //        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.id, ascending: true)],
 //        animation: .default)
@@ -56,8 +61,9 @@ struct TaskDetailsView: View {
     @State private var note = ""
 //    @State private var list: Int16 = 0
     @State private var focus = false
-    @State private var date = Date()
+    @State private var singleAction = false
     
+    @State private var date = Date()
     @State private var dateActive = false
     @State private var reminderActive = false
     @State private var hideUntilDate = false
@@ -112,6 +118,21 @@ struct TaskDetailsView: View {
                                 runOnAppear = false // prevent the onAppear from running again 
                             }
                             else if runOnAppear && task == nil { // else if this is a new task, set the default values
+                                
+                                // First check that there is at least one project, otherwise create the single actions project:
+                                if projects.count == 0 { // if there are no projects, created the single action project
+                                    let singleActionsProject = Project(context: viewContext)
+                                    singleActionsProject.id = UUID()
+                                    singleActionsProject.order = -99999
+                                    singleActionsProject.name = "Single actions"
+                                    singleActionsProject.note = "For tasks that require only one action to complete"
+                                    singleActionsProject.icon = "list.bullet"
+                                    singleActionsProject.color = "blue"
+                                    singleActionsProject.singleactions = true // to protect it from deletion, and make sure it stays on the top of the list
+                                    singleActionsProject.createddate = Date()
+                                    PersistenceController.shared.save()
+                                }
+                                
                                 focus = defaultFocus
                                 waitingFor = defaultWaitingFor
                                 if defaultProject != nil {
@@ -168,10 +189,41 @@ struct TaskDetailsView: View {
                                 someday = false // if I focus on a Someday task, move it to Next
                             }
                         }
+                    
+                    
+                    if task == nil { // if this is a new task
+                        
+                        HStack {
+                            Button() {
+                                saveTask(toTop: true)
+                            } label: {
+                                Label("Add to top", systemImage: "arrow.up.circle.fill")
+                            }
+                            
+                            Button() {
+                                saveTask(toTop: false)
+                            } label: {
+                                Label("Add to bottom", systemImage: "arrow.down.circle.fill")
+                            }
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                    }
                 }
                 
                 
                 Group {
+                    
+                    if selectedProject == nil { // if I haven't selected a project, allow me to set it to the Single action project
+                        Toggle("Single action", isOn: $singleAction)
+                            .onChange(of: singleAction) { _ in
+                                if singleAction && projects.filter({$0.singleactions}).count == 1 { // if I activate Single action, set the project to the single action project, if it exists
+                                    selectedProject = projects.filter({$0.singleactions})[0] // assign the single action project to the task
+                                }
+                                else {
+                                    selectedProject = nil
+                                }
+                            }
+                    }
                 
                     NavigationLink {
                         ProjectPickerView(selectedProject: $selectedProject, tasks: [])
@@ -181,11 +233,20 @@ struct TaskDetailsView: View {
                             Text("Project")
                         }
                         else {
-                            Text(selectedProject?.name ?? "")
-                            //                            Text("\(task?.project?.name ?? "")")
-                                .onTapGesture {
-                                    selectedProject = nil // unselect the project
-                                }
+                            HStack {
+                                Text(selectedProject?.name ?? "")
+                                
+                                Spacer()
+                                
+                                Image(systemName: selectedProject?.icon ?? "book.fill")
+                                    .resizable()
+                                    .frame(width: 18, height: 18)
+                                    .foregroundColor(Color(selectedProject?.color ?? "black"))
+                                    .padding(.leading, 3)
+                            }
+//                            .onTapGesture {
+//                                selectedProject = nil // unselect the project
+//                            }
                         }
                     }
                     
@@ -312,23 +373,6 @@ struct TaskDetailsView: View {
                             secondaryButton: .cancel()
                         )
                     }
-                }
-                if task == nil { // if this is a new task
-                    
-                    HStack {
-                        Button() {
-                            saveTask(toTop: true)
-                        } label: {
-                            Label("Add to top", systemImage: "arrow.up.circle.fill")
-                        }
-                        
-                        Button() {
-                            saveTask(toTop: false)
-                        } label: {
-                            Label("Add to bottom", systemImage: "arrow.down.circle.fill")
-                        }
-                    }
-                    .buttonStyle(BorderlessButtonStyle())
                 }
                 else if taskHasChanged() {
                     

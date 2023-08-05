@@ -93,10 +93,9 @@ struct ListView: View {
                                 }
                                 .onMove(perform: { indices, destination in
                                     moveItem(at: indices, destination: destination, filter: { task in
-                                        return task.filterTasks(filter: "Focus")
+                                        return task.filterTasks(filter: "Focus") && !task.filterTasks(filter: "Deferred")
                                     })
                                 })
-//                                .onMove(perform: moveItemFocus)
                             }
                         }
                         
@@ -159,9 +158,9 @@ struct ListView: View {
                         }
                         
                         // Waiting for:
-                        if ( !showOnlyFocus && ( title == "Waiting for" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Waiting for")}).count > 0 { // if there are focused tasks
+                        if ( !showOnlyFocus && ( title == "Waiting for" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are focused tasks
                             Section("Waiting for") {
-                                ForEach(tasks.filter({$0.filterTasks(filter: "Waiting for")})) { task in
+                                ForEach(tasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")})) { task in
                                     NavigationLink {
                                         ProjectTaskView(project: task.project ?? Project())
                                     } label: {
@@ -178,7 +177,7 @@ struct ListView: View {
                                 }
                                 .onMove(perform: { indices, destination in
                                     moveItem(at: indices, destination: destination, filter: { task in
-                                        return task.filterTasks(filter: "Waiting for")
+                                        return task.filterTasks(filter: "Waiting for") && !task.filterTasks(filter: "Deferred")
                                     })
                                 })
 //                                .onMove(perform: moveItemFocus)
@@ -212,9 +211,9 @@ struct ListView: View {
                         }
                         
                         // Someday:
-                        if ( !showOnlyFocus && ( title == "Someday" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Someday")}).count > 0 {
+                        if ( !showOnlyFocus && ( title == "Someday" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
                             Section("Someday") {
-                                ForEach(tasks.filter({$0.filterTasks(filter: "Someday")})) { task in
+                                ForEach(tasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")})) { task in
                                     NavigationLink {
                                         ProjectTaskView(project: task.project ?? Project())
                                     } label: {
@@ -231,13 +230,13 @@ struct ListView: View {
                                 }
                                 .onMove(perform: { indices, destination in
                                     moveItem(at: indices, destination: destination, filter: { task in
-                                        return task.filterTasks(filter: "Someday")
+                                        return task.filterTasks(filter: "Someday") && !task.filterTasks(filter: "Deferred")
                                     })
                                 })
                             }
                         }
                     }
-                    .padding(EdgeInsets(top: 0, leading: -12, bottom: 0, trailing: -12)) // reduce padding of the list items
+                    .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
                     .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
 //                    .listStyle(PlainListStyle())
                     

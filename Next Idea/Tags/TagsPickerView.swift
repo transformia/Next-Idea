@@ -114,7 +114,8 @@ struct TagsPickerView: View {
                     }
                 }
             }
-            .listStyle(PlainListStyle())
+            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
+//            .listStyle(PlainListStyle())
         }
     }
 }

@@ -27,7 +27,17 @@ struct ProjectListView: View {
             
             List {
                 
-                ForEach(projects.filter({!$0.completed})) { project in
+                // The single actions project:
+                ForEach(projects.filter({$0.singleactions})) { project in
+                    NavigationLink {
+                        ProjectTaskView(project: project)
+                    } label: {
+                        ProjectView(project: project)
+                    }
+                }
+                
+                // The other projects:
+                ForEach(projects.filter({!$0.singleactions && !$0.completed})) { project in
                     NavigationLink {
                         ProjectTaskView(project: project)
                     } label: {
@@ -44,7 +54,7 @@ struct ProjectListView: View {
                     }
                 }
             }
-            .padding(EdgeInsets(top: 0, leading: -12, bottom: 0, trailing: -12)) // reduce padding of the list items
+            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
             .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
 //            .listStyle(PlainListStyle())
             .toolbar {
@@ -108,28 +118,28 @@ struct ProjectListView: View {
         if itemToMove < destination {
             var startIndex = itemToMove + 1
             let endIndex = destination - 1
-            var startOrder = projects.filter({!$0.completed})[itemToMove].order
+            var startOrder = projects.filter({!$0.singleactions && !$0.completed})[itemToMove].order
             // Change the order of all tasks between the task to move and the destination:
             while startIndex <= endIndex {
-                projects.filter({!$0.completed})[startIndex].order = startOrder
+                projects.filter({!$0.singleactions && !$0.completed})[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            projects.filter({!$0.completed})[itemToMove].order = startOrder // set the moved task's order to its final value
+            projects.filter({!$0.singleactions && !$0.completed})[itemToMove].order = startOrder // set the moved task's order to its final value
         }
         
         // Else if the item is moving up:
         else if itemToMove > destination {
             var startIndex = destination
             let endIndex = itemToMove - 1
-            var startOrder = projects.filter({!$0.completed})[destination].order + 1
-            let newOrder = projects.filter({!$0.completed})[destination].order
+            var startOrder = projects.filter({!$0.singleactions && !$0.completed})[destination].order + 1
+            let newOrder = projects.filter({!$0.singleactions && !$0.completed})[destination].order
             while startIndex <= endIndex {
-                projects.filter({!$0.completed})[startIndex].order = startOrder
+                projects.filter({!$0.singleactions && !$0.completed})[startIndex].order = startOrder
                 startOrder += 1
                 startIndex += 1
             }
-            projects.filter({!$0.completed})[itemToMove].order = newOrder // set the moved task's order to its final value
+            projects.filter({!$0.singleactions && !$0.completed})[itemToMove].order = newOrder // set the moved task's order to its final value
         }
         
         PersistenceController.shared.save() // save the item

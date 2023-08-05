@@ -35,6 +35,19 @@ struct ProjectDetailsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                
+                // Temporary button to set my Single actions project as singleactions, and all others as not single actions:
+                if projects.filter({$0.singleactions}).count != 1 {
+                    Button {
+                        for otherProject in projects {
+                            otherProject.singleactions = false
+                        }
+                        project?.singleactions = true
+                    } label: {
+                        Text("Set as single actions project, and set all others as not")
+                    }
+                }
+                
                 TextField("", text: $name, axis: .vertical)
                     .focused($focused)
                     .onAppear {
@@ -80,7 +93,7 @@ struct ProjectDetailsView: View {
                 TextField("Notes", text: $note, axis: .vertical)
                     .font(.footnote)
                 
-                if project != nil { // if this is not a new project, show a button to delete it
+                if project != nil && !(project?.singleactions ?? true) { // if this is not a new project, and it is not the Single actions project, show a button to delete it
                     Button(role: .destructive) {
                         showDeleteAlert = true
                     } label: {
@@ -122,11 +135,12 @@ struct ProjectDetailsView: View {
                         if project == nil {
                             let project = Project(context: viewContext)
                             project.id = UUID()
-                            project.order = (projects.first?.order ?? 0) - 1
+                            project.order = (projects.last?.order ?? 0) + 1
                             project.name = name
                             project.note = note
                             project.icon = selectedIcon
                             project.color = selectedColor
+                            project.singleactions = false
                             project.createddate = Date()
                         }
                         else {

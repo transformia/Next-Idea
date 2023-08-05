@@ -41,10 +41,11 @@ struct ProjectPickerView: View {
                 Label("Create project: \(searchText)", systemImage: "book")
                     .onTapGesture {
 //                        if tasks != [] { // if I have called this view with at least one task
-                            let project = Project(context: viewContext)
-                            project.id = UUID()
-                            project.name = searchText
-                            project.order = (projects.first?.order ?? 0) - 1
+                        let project = Project(context: viewContext)
+                        project.id = UUID()
+                        project.name = searchText
+                        project.order = (projects.last?.order ?? 0) + 1
+                        project.singleactions = false
                         
                         if tasks != [] { // if I have called this view with at least one task, update the tasks and save
                             for task in tasks {
@@ -98,6 +99,7 @@ struct ProjectPickerView: View {
                     }
                 }
             }
+            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
         }
     }
 }

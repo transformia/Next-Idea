@@ -15,6 +15,11 @@ struct QuickActionView: View {
         animation: .default)
     private var tasks: FetchedResults<Task>
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Project.order, ascending: true)],
+        animation: .default)
+    private var projects: FetchedResults<Project> // to be able to set the project to the Single actions project
+    
     @State private var showProjectPicker = false
     @State private var showTagPicker = false
     @State private var showDatePicker = false
@@ -127,6 +132,24 @@ struct QuickActionView: View {
                         showDatePicker = true
                     } label: {
                         Image(systemName: "calendar")
+                            .resizable()
+                            .frame(width: 26, height: 26)
+                            .foregroundColor(.black)
+                            .padding(10)
+                    }
+                    
+                    Button {
+                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
+                        impactMed.impactOccurred() // haptic feedback
+                        if projects.filter({$0.singleactions}).count == 1 { // if there is a Single actions project
+                            for task in tasks.filter({$0.selected}) {
+                                task.project = projects.filter({$0.singleactions})[0]
+                                task.modifieddate = Date()
+                            }
+                            PersistenceController.shared.save()
+                        }
+                    } label: {
+                        Image(systemName: "1.circle.fill")
                             .resizable()
                             .frame(width: 26, height: 26)
                             .foregroundColor(.black)

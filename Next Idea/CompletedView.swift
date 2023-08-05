@@ -17,13 +17,14 @@ struct CompletedView: View {
     
     var body: some View {
         
-        ZStack(alignment: .bottom) {
+        VStack {
             List {
                 ForEach(tasks.filter({$0.completed})) { task in
                     TaskView(task: task)
                 }
             }
-            .listStyle(PlainListStyle())
+//            .listStyle(PlainListStyle())
+            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
             
             if tasks.filter({$0.completed && $0.modifieddate ?? Date() < Calendar.current.date(byAdding: .month, value: -1, to: Date())!}).count > 0 {
                 Button {

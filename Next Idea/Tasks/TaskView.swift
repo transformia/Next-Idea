@@ -15,6 +15,11 @@ struct TaskView: View {
         animation: .default)
     private var tasks: FetchedResults<Task> // to be able to change the order of the task
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Project.order, ascending: true)],
+        animation: .default)
+    private var projects: FetchedResults<Project> // to be able to select the Single actions project
+    
 //    @FetchRequest(
 //        sortDescriptors: [NSSortDescriptor(keyPath: \Tag.id, ascending: true)],
 //        animation: .default)
@@ -38,8 +43,6 @@ struct TaskView: View {
     }
     
     @State private var name = ""
-    
-//    @State private var editable = false // determines if the task is editable or not, i.e. whether it is a Text or a TextField -> having only TextFields leads to stuttering when scrolling through long lists
     
     @State private var dateColor: Color = .primary // color in which the due date and reminder date are displayed
     
@@ -79,77 +82,16 @@ struct TaskView: View {
 //                        .padding(.top, 10)
                 }
                 
-//                if !task.selected { // if the task is not selected, show it as a Text
-                if !task.editable { // if the task is not editable, show it as a Text
-                    Text(task.name ?? "")
-                        .font(.callout)
-                        .padding([.top, .bottom], 5)
-//                        .onAppear { // this probably causes task names to get deleted sometimes
-//                            if task.name == "" {
-//                                editable = true // make it possible to edit new tasks when they are created
-//                            }
-//                        }
-                        .foregroundColor(task.ticked && !task.completed ? .gray // color the task if it is ticked, but not if it is already in the completed tasks view.
-                                         : weeklyReview.active && (Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date())) ? .green // color the task green if weekly review is active, and the next review date is in the future
-                                         : task.selected ? .teal // color the task teal if it is selected
-                                         : task.waitingfor ? .gray : nil // color the task if it is waiting for
-                        )
-                        .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
-                }
-                
-                else { // else if the task is editable, show it as a text field so that it can be edited
-                    TextField("", text: $name, axis: .vertical)
-                        .focused($focusOnName)
-                        .font(.callout)
-                        .foregroundColor(.purple) // to distinguish it from when it is a Text
-                        .padding([.top, .bottom], 5)
-                        .foregroundColor(task.ticked && !task.completed ? .gray : task.selected ? .teal : task.waitingfor ? .gray : nil) // color the task if it is ticked, but not if it is already in the completed tasks view. color the task teal if it is selected
-                        .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
-                        .onAppear {
-                            if task.editable {
-                                focusOnName = true
-                            }
-                        }
-//                        .onAppear { // this creates issues of task names disappearing sometimes
-////                            name = task.name ?? ""
-////                            if name == "" {
-//                            if editable {
-//                                focused = true // focus on the task when it is created
-//                            }
-//                        }
-                        .onChange(of: name) { _ in
-//                            task.name = name // save the changes - kills the performance!
-//                            PersistenceController.shared.save()
-                            
-                            // If I press enter:
-                            if name.contains("\n") { // if a newline is found
-                                print("New line found. Closing the keyboard")
-                                name = name.replacingOccurrences(of: "\n", with: "") // replace it with nothing
-                                if name == "" { // if the task has no name, do nothing (if I delete the task in this case, there are some rare cases where the task gets deleted just because I didn't change anything in it)
-//                                    viewContext.delete(task)
-                                }
-                                else { // if the task has a name, save it, make it into a Text, and close the keyboard
-                                    focusOnName = false // close the keyboard
-                                    task.editable = false // make the task into a Text again
-                                    //                                task.selected = false // unselect the task, and make it into a Text again
-                                    task.name = name // save the changes to the name
-                                    PersistenceController.shared.save()
-                                }
-                            }
-                        }
-                    
-//                    Text("Editable!")
-                }
-                
-                if focusOnName { // if I'm editing the task name, show a button to open the task details
-                    Label("Task details", systemImage: "info.circle")
-                        .labelStyle(.iconOnly)
-                        .foregroundColor(.cyan)
-                        .onTapGesture {
-                            focusOnName = false
-                            showTaskDetails = true
-                        }
-                }
+                Text(task.name ?? "")
+                    .font(.callout)
+                    .padding([.top, .bottom], 5)
+                    .foregroundColor(task.ticked && !task.completed ? .gray // color the task if it is ticked, but not if it is already in the completed tasks view.
+                                     : weeklyReview.active && (Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date())) ? .green // color the task green if weekly review is active, and the next review date is in the future
+                                     : task.selected ? .teal // color the task teal if it is selected
+                                     : task.waitingfor ? .gray : nil // color the task if it is waiting for
+                    )
+                    .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
+               
                 
 //                Text("\(task.order)")
             }
@@ -224,45 +166,19 @@ struct TaskView: View {
                 impactMed.impactOccurred() // haptic feedback
                 task.selected.toggle()
             }
-            else if !task.editable { // if no tasks are selected, and I'm not editing the task, tapping on a task opens the task details
+            else { // else if no tasks are selected, tapping on a task opens the task details
                 showTaskDetails = true
             }
-            /*
-            else { // if no tasks are selected, tapping on a task makes it editable and opens the keyboard, and makes all other tasks non-editable
-                editable = true
-                focused = true
-                print("Selecting task")
-            }
-            */
             PersistenceController.shared.save()
         }
-//        .onChange(of: focusOnName) { _ in
-//            if !focusOnName { // if I tap on another task (and this task loses the focus), make it non editable, and save the changes
-//                task.editable = false
-//                task.name = name // save the changes to the name
-//                PersistenceController.shared.save()
-//            }
-//        }
         .swipeActions(edge: .leading) {
             
-//            if weeklyReview.active {
-//                Button { // mark this task as reviewed
-//                    task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: task.nextreviewdate ?? Date())
-//                    PersistenceController.shared.save()
-//                } label: {
-//                    Label("Reviewed", systemImage: "figure.mind.and.body")
-//                }
-//                .tint(.green)
-//            }
-//
-//            else {
-                Button { // tick this task if it is not recurring, otherwise increment its date
-                    completeTask(task: task)
-                } label: {
-                    Label("Complete", systemImage: "checkmark")
-                }
-                .tint(.green)
-//            }
+            Button { // tick this task if it is not recurring, otherwise increment its date
+                completeTask(task: task)
+            } label: {
+                Label("Complete", systemImage: "checkmark")
+            }
+            .tint(.green)
             
             // Move the task to the top or to the bottom:
             Button {
@@ -280,75 +196,51 @@ struct TaskView: View {
                 Label("Move to bottom", systemImage: "arrow.down")
             }
             .tint(.orange)
-            
-            
+        }
+        .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
+                        
             Button { // select or unselect this task
                 task.selected.toggle()
-                //                if !task.selected { // if I'm unselecting the task
-                ////                    focused = false // close the keyboard
-                ////                    if editable { // if the task was being edited
-                ////                        editable = false // make the task into a Text again
-                //                        task.name = name // save the changes to the name
-                ////                    }
-                //                }
                 PersistenceController.shared.save()
             } label: {
                 Label("Select", systemImage: "pin.circle")
             }
             .tint(.teal)
             
-        }
-        .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
-            
-            // Edit the task name:
-            Button {
-                name = task.name ?? "" // load the task name
-                task.editable = true
-                focusOnName = true
-                print("Selecting task")
-//                showTaskDetails = true
-            } label: {
-                Label("Edit", systemImage: "pencil")
-//                Label("Details", systemImage: "info.circle")
-            }
-            .tint(.cyan)
-            
-//            if task.list != 1 {
-//                // Move the task to Now:
-//                Button {
-//                    task.order = (tasks.filter({$0.list == 1 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
-//                    task.list = 1
-//                    task.modifieddate = Date()
-//                    PersistenceController.shared.save() // save the item
-//                } label: {
-//                    Label("Now", systemImage: "scope")
-//                }
-//                .tint(.green)
-//            }
-            
-            // Make the task focused / non focused:
-            Button {
-                task.focus.toggle() // toggle focus
-                // Put the task at the top of the Next list or at the bottom of the Focused list:
-                task.order = !task.focus ? (tasks.first?.order ?? 0) - 1 : (tasks.last?.order ?? 0) + 1
-//                if !task.focus {
-//                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the Next list minus 1
-//                }
-//                else {
-//                    task.someday = false // move the task to the Next list
-//                }
-                task.modifieddate = Date()
-                PersistenceController.shared.save() // save the item
-            } label: {
-                Label("Focus", systemImage: "scope")
-            }
-            .tint(.green)
-            
-            if task.someday {
-                // Move the task to Next:
+            // Make the task focused:
+            if !task.focus {
                 Button {
-                    task.order = (tasks.filter({!$0.someday && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                    // Put the task at the bottom of the Focused list, and put it in the Single actions project if it doesn't have a project:
+                    task.focus = true
                     task.someday = false
+                    task.order = (tasks.filter({!$0.completed}).last?.order ?? 0) + 1
+                    //                if !task.focus {
+                    //                    task.order = (tasks.filter({$0.list == 2 && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the Next list minus 1
+                    //                }
+                    //                else {
+                    //                    task.someday = false // move the task to the Next list
+                    //                }
+                    if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                        task.project = projects.filter({$0.singleactions})[0]
+                    }
+                    task.modifieddate = Date()
+                    PersistenceController.shared.save() // save the item
+                } label: {
+                    Label("Focus", systemImage: "scope")
+                }
+                .tint(.green)
+            }
+            
+            if task.someday || task.focus || task.project == nil {
+                // Move the task to the top of Next, and put it in the Single actions project if it doesn't have a project:
+                Button {
+                    task.focus = false
+                    task.someday = false
+                    task.order = (tasks.filter({!$0.completed}).first?.order ?? 0) - 1
+//                    task.order = (tasks.filter({!$0.someday && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
+                    if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                        task.project = projects.filter({$0.singleactions})[0]
+                    }
                     task.modifieddate = Date()
                     PersistenceController.shared.save() // save the item
                 } label: {
@@ -358,11 +250,14 @@ struct TaskView: View {
             }
             
             if !task.someday {
-                // Move the task to Someday:
+                // Move the task to the top of Someday, and put it in the Single actions project if it doesn't have a project:
                 Button {
-                    task.order = (tasks.filter({$0.someday && !$0.completed}).first?.order ?? 0) - 1 // set the order of the task to the order of the first uncompleted task of the destination list minus 1
-                    task.someday = true
                     task.focus = false
+                    task.someday = true
+                    task.order = (tasks.filter({!$0.completed}).first?.order ?? 0) - 1
+                    if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                        task.project = projects.filter({$0.singleactions})[0]
+                    }
                     task.modifieddate = Date()
                     PersistenceController.shared.save() // save the item
                 } label: {
@@ -372,10 +267,13 @@ struct TaskView: View {
             }
             
 //            if task.list != 0 {
-                // Toggle Waiting for on the task:
+                // Toggle Waiting for on the task, and put it in the Single actions project if it doesn't have a project:
                 Button {
                     task.waitingfor.toggle()
                     task.modifieddate = Date()
+                    if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                        task.project = projects.filter({$0.singleactions})[0]
+                    }
                     PersistenceController.shared.save() // save the item
                 } label: {
                     Label("Waiting", systemImage: "stopwatch")
@@ -389,6 +287,10 @@ struct TaskView: View {
     }
     
     private func completeTask(task: Task) {
+        // Deselect the task if it was selected:
+        task.selected = false
+        
+        // If the task isn't recurring, complete it after a certain time:
         if !task.recurring {
             task.ticked.toggle()
             task.modifieddate = Date()
@@ -403,6 +305,7 @@ struct TaskView: View {
 //                }
 //            }
         }
+        // Else if the task is recurring, move its date forward:
         else { // else if the task is recurring, increment its date after N seconds, and remove the focus from it
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
                 switch(task.recurrencetype) {

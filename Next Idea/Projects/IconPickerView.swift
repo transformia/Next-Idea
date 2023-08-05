@@ -44,7 +44,7 @@ struct IconPickerView: View {
             HStack {
                 ImageIcon(systemName: "book.fill", selectedIcon: $selectedIcon)
                 ImageIcon(systemName: "shift.fill", selectedIcon: $selectedIcon)
-                ImageIcon(systemName: "play.fill", selectedIcon: $selectedIcon)
+                ImageIcon(systemName: "list.bullet", selectedIcon: $selectedIcon)
                 ImageIcon(systemName: "star.fill", selectedIcon: $selectedIcon)
             }
             HStack {
