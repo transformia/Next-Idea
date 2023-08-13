@@ -93,7 +93,7 @@ struct ProjectDetailsView: View {
                 TextField("Notes", text: $note, axis: .vertical)
                     .font(.footnote)
                 
-                if project != nil && !(project?.singleactions ?? true) { // if this is not a new project, and it is not the Single actions project, show a button to delete it
+                if project != nil && !(project?.singleactions ?? true) && (project?.tasks?.allObjects as! [Task]).filter({!$0.completed}).count == 0 { // if this is not a new project, and it is not the Single actions project, and the project has no uncompleted tasks, show a button to delete it
                     Button(role: .destructive) {
                         showDeleteAlert = true
                     } label: {

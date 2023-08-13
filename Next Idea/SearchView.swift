@@ -40,7 +40,19 @@ struct SearchView: View {
                         ForEach(tasks) { task in
                             if(!task.completed) {
                                 if(task.name?.range(of: confirmedSearchText, options: .caseInsensitive) != nil || confirmedSearchText == "") { // if the task name contains the value of the search text, or the search text is blank
-                                    TaskView(task: task)
+                                    NavigationLink {
+                                        ProjectTaskView(project: task.project ?? Project())
+                                    } label: {
+                                        HStack {
+                                            TaskView(task: task)
+                                            
+                                            Image(systemName: task.project?.icon ?? "book.fill")
+                                                .resizable()
+                                                .frame(width: 18, height: 18)
+                                                .foregroundColor(Color(task.project?.color ?? "black"))
+                                                .padding(.leading, 3)
+                                        }
+                                    }
                                 }
                             }
                         }

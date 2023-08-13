@@ -53,7 +53,7 @@ struct ListView: View {
                     List {
                         
                         // Inbox:
-                        if ( !showOnlyFocus && ( title == "Inbox" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Inbox")}).count > 0 { // if there are tasks without a project
+                        if ( !showOnlyFocus && ( title == "Inbox" || title == "All tasks" || title == "Next" ) ) && tasks.filter({$0.filterTasks(filter: "Inbox")}).count > 0 { // if there are tasks without a project
                             Section("Inbox") {
                                 ForEach(tasks.filter({$0.filterTasks(filter: "Inbox")})) { task in
                                     NavigationLink {
@@ -258,11 +258,14 @@ struct ListView: View {
                         Button {
                             weeklyReview.active.toggle()
                         } label: {
-                            if weeklyReview.active {
-                                Label("", systemImage: "figure.yoga")
-                            }
-                            else {
-                                Label("", systemImage: "figure.mind.and.body")
+                            HStack {
+                                if weeklyReview.active {
+                                    Label("", systemImage: "figure.yoga")
+                                }
+                                else {
+                                    Label("", systemImage: "figure.mind.and.body")
+                                }
+                                Text("\(countTasksToBeReviewed())")
                             }
                         }
                         
@@ -299,6 +302,13 @@ struct ListView: View {
 //            .navigationTitle(list == 0 ? "Inbox" : list == 2 ? "Next" : "Someday")
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+    
+    private func countTasksToBeReviewed() -> Int {
+        return tasks.filter({
+            $0.filterTasks(filter: title)
+            && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())
+        }).count
     }
     
     

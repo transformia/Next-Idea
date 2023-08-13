@@ -50,6 +50,8 @@ struct TaskView: View {
     
     @State private var showTaskDetails = false
     
+    @State private var notificationExists = false
+    
     var body: some View {
         VStack(alignment: HorizontalAlignment.leading) {
             HStack {
@@ -59,7 +61,7 @@ struct TaskView: View {
                         .foregroundColor(Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? .green : nil)
                         .onTapGesture { // if the task has a next review date today or in the past, push it forward by 7 days. Else set it back to today
                             if Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) {
-                                task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: task.nextreviewdate ?? Date())
+                                task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: Date())
                             }
                             else {
                                 task.nextreviewdate = Date()
@@ -83,7 +85,7 @@ struct TaskView: View {
                 }
                 
                 Text(task.name ?? "")
-                    .font(.callout)
+                    .font(.subheadline)
                     .padding([.top, .bottom], 5)
                     .foregroundColor(task.ticked && !task.completed ? .gray // color the task if it is ticked, but not if it is already in the completed tasks view.
                                      : weeklyReview.active && (Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date())) ? .green // color the task green if weekly review is active, and the next review date is in the future
@@ -92,6 +94,26 @@ struct TaskView: View {
                     )
                     .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                
+//                if task.note != "" || task.link != "" || ( task.dateactive && task.reminderactive ) {
+                    Spacer() // push the icons to the right
+//                }
+                
+                VStack {
+                    
+                    // Show an icon if the task has a note:
+                    if task.note != "" {
+                        Image(systemName: "note.text")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    // Show an icon if the task has a link:
+                    if task.link != "" {
+                        Image(systemName: "link")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
                 
 //                Text("\(task.order)")
             }
@@ -138,9 +160,20 @@ struct TaskView: View {
                     }
                     .onAppear {
                         setDateColor(task: task) // color the date depending on when it is
+                        
+                        if task.reminderactive { // if the task has a reminder, check if it has an active notification
+                            checkNotificationExistence()
+                        }
                     }
                     .onChange(of: task.date) { _ in
                         setDateColor(task: task) // color the date depending on when it is
+                    }
+                    
+                    // Show an icon if the task has a reminder, and the notification exists on this device:
+                    if task.reminderactive && notificationExists {
+                        Image(systemName: "bell.fill")
+                            .font(.caption)
+                            .foregroundColor(.blue)
                     }
                     
                     Spacer()
@@ -297,6 +330,9 @@ struct TaskView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) { // complete or uncomplete the task after N seconds
                 task.completed = task.ticked                
                 PersistenceController.shared.save()
+                
+                // Cancel the notification if there was one:
+                task.cancelNotification()
             }
 
 //            if !task.ticked { // if I'm uncompleting a task, mark it as not complete after a short while
@@ -322,9 +358,25 @@ struct TaskView: View {
                 }
                 task.focus = false
                 PersistenceController.shared.save()
+                
+                // Cancel the notification if there is a reminder, and create it again with the new date and time:
+                if task.reminderactive {
+                    task.cancelNotification()
+                    task.createNotification()
+                }
             }
         }
     }
+    
+    private func checkNotificationExistence() {
+        let identifier = String(describing: task.id)
+            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                notificationExists = requests.contains { request in
+                    print("Notification found, \(String(describing: request.trigger))")
+                    return request.identifier == identifier
+                }
+            }
+        }
     
     var duedatetimeText: some View {
         if(Calendar.current.startOfDay(for: task.date ?? Date()) == Calendar.current.startOfDay(for: Date())) { // if the due date is today

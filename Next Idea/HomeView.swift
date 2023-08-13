@@ -114,15 +114,6 @@ struct HomeView: View {
                     }
                     
                     NavigationLink {
-                        ListView(title: "To be reviewed")
-                    } label: {
-                        HStack {
-                            Label("To be reviewed__", systemImage: "figure.mind.and.body")
-                        }
-                    }
-                    
-                    
-                    NavigationLink {
                         SearchView()
                     } label: {
                         Label("Search", systemImage: "magnifyingglass")
@@ -151,11 +142,14 @@ struct HomeView: View {
                         Button {
                             weeklyReview.active.toggle()
                         } label: {
-                            if weeklyReview.active {
-                                Label("", systemImage: "figure.yoga")
-                            }
-                            else {
-                                Label("", systemImage: "figure.mind.and.body")
+                            HStack {
+                                if weeklyReview.active {
+                                    Label("", systemImage: "figure.yoga")
+                                }
+                                else {
+                                    Label("", systemImage: "figure.mind.and.body")
+                                }
+                                Text("\(countTasksToBeReviewed())")
                             }
                         }
                     }
@@ -190,26 +184,27 @@ struct HomeView: View {
     
     private func countTasks(filter: String) -> Int {
         if filter != "" {
-            return tasks.filter({$0.filterTasks(filter: filter)}).count
+            return tasks.filter({
+                $0.filterTasks(filter: filter)
+                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+            }).count
         }
         else {
-            return tasks.filter({!$0.completed}).count
+            return tasks.filter({
+                !$0.completed
+                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+            }).count
         }
     }
     
-//    private func countTasks(list: Int?, showOnlyFocus: Bool) -> Int {
-//        if list != nil {
-//            return tasks.filter({
-//                $0.list == list ?? 0 // task is in the list
-//                && (!showOnlyFocus || $0.focus) // I'm not showing only focus, or the task is focused
-//                && !$0.completed // the task is not completed
-//                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
-//                    }).count
+    private func countTasksToBeReviewed() -> Int {
+        return tasks.filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
+//        var count = 0
+//        for task in tasks {
+//            count += (project.tasks?.allObjects as! [Task]).filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
 //        }
-//        else {
-//            return tasks.filter({!$0.completed}).count
-//        }
-//    }
+//        return count
+    }
     
     private func countDueOverdueTasks() -> Int {
         return tasks.filter({

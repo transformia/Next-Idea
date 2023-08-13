@@ -15,6 +15,11 @@ struct ProjectListView: View {
         animation: .default)
     private var projects: FetchedResults<Project>
     
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \Task.order, ascending: true)],
+        animation: .default)
+    private var tasks: FetchedResults<Task> // to be able to count the tasks to be reviewed
+    
     @EnvironmentObject var weeklyReview: WeeklyReview
     
     @State private var showProjectDetailsView = false
@@ -70,11 +75,14 @@ struct ProjectListView: View {
                         Button {
                             weeklyReview.active.toggle()
                         } label: {
-                            if weeklyReview.active {
-                                Label("", systemImage: "figure.yoga")
-                            }
-                            else {
-                                Label("", systemImage: "figure.mind.and.body")
+                            HStack {
+                                if weeklyReview.active {
+                                    Label("", systemImage: "figure.yoga")
+                                }
+                                else {
+                                    Label("", systemImage: "figure.mind.and.body")
+                                }
+                                Text("\(countTasksToBeReviewed())")
                             }
                         }
                     }
@@ -82,6 +90,8 @@ struct ProjectListView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
+                        
+                        addProjectButton
                         
                         Button {
                             showSearchView.toggle()
@@ -96,9 +106,10 @@ struct ProjectListView: View {
             .navigationTitle("Projects")
             .navigationBarTitleDisplayMode(.inline)
             
-            HStack {
-                addProjectButton
-            }
+            AddTaskButtonsView(defaultFocus: false, defaultWaitingFor: false, defaultProject: nil, defaultTag: nil)
+//            HStack {
+//                addProjectButton
+//            }
         }
         .sheet(isPresented: $showProjectDetailsView) {
             ProjectDetailsView(project: nil)
@@ -145,6 +156,10 @@ struct ProjectListView: View {
         PersistenceController.shared.save() // save the item
     }
     
+    private func countTasksToBeReviewed() -> Int {
+        return tasks.filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
+    }
+    
     var addProjectButton: some View {
         Button {
             let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
@@ -161,14 +176,15 @@ struct ProjectListView: View {
 //            PersistenceController.shared.save()
         } label: {
             Image(systemName: "plus")
-                .resizable()
-                .frame(width: 20, height: 20)
-                .foregroundColor(.white)
-                .padding(10)
-                .background(.blue)
-                .clipShape(Circle())
+//            Image(systemName: "plus")
+//                .resizable()
+//                .frame(width: 20, height: 20)
+//                .foregroundColor(.white)
+//                .padding(10)
+//                .background(.blue)
+//                .clipShape(Circle())
         }
-        .padding(.bottom, 8)
+//        .padding(.bottom, 8)
     }
 }
 

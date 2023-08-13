@@ -170,11 +170,14 @@ struct ProjectTaskView: View {
                     Button {
                         weeklyReview.active.toggle()
                     } label: {
-                        if weeklyReview.active {
-                            Label("", systemImage: "figure.yoga")
-                        }
-                        else {
-                            Label("", systemImage: "figure.mind.and.body")
+                        HStack {
+                            if weeklyReview.active {
+                                Label("", systemImage: "figure.yoga")
+                            }
+                            else {
+                                Label("", systemImage: "figure.mind.and.body")
+                            }
+                            Text("\(countTasksToBeReviewed())")
                         }
                     }
                     
@@ -251,172 +254,9 @@ struct ProjectTaskView: View {
         PersistenceController.shared.save() // save the item
     }
     
-    /*
-    private func moveItemFocus(at sets:IndexSet, destination: Int) {
-        let itemToMove = sets.first!
-        let tasksForMove = filteredTasks.filter({!$0.completed && $0.focus})
-        
-        // If the item is moving down:
-        if itemToMove < destination {
-//            print(itemToMove)
-//            print(destination)
-            var startIndex = itemToMove + 1
-            let endIndex = destination - 1
-//            print(startIndex)
-//            print(endIndex)
-            var startOrder = tasksForMove[itemToMove].order
-//            print(startOrder)
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
-        }
-        
-        // Else if the item is moving up:
-        else if itemToMove > destination {
-            var startIndex = destination
-            let endIndex = itemToMove - 1
-            var startOrder = tasksForMove[destination].order + 1
-            let newOrder = tasksForMove[destination].order
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
-        }
-        
-        PersistenceController.shared.save() // save the item
+    private func countTasksToBeReviewed() -> Int {
+        return (project.tasks?.allObjects as! [Task]).filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
     }
-    
-    private func moveItemDue(at sets:IndexSet, destination: Int) {
-        let itemToMove = sets.first!
-        let tasksForMove = filteredTasks.filter({!$0.completed && !$0.focus && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())})
-        
-        // If the item is moving down:
-        if itemToMove < destination {
-//            print(itemToMove)
-//            print(destination)
-            var startIndex = itemToMove + 1
-            let endIndex = destination - 1
-//            print(startIndex)
-//            print(endIndex)
-            var startOrder = tasksForMove[itemToMove].order
-//            print(startOrder)
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
-        }
-        
-        // Else if the item is moving up:
-        else if itemToMove > destination {
-            var startIndex = destination
-            let endIndex = itemToMove - 1
-            var startOrder = tasksForMove[destination].order + 1
-            let newOrder = tasksForMove[destination].order
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
-        }
-        
-        PersistenceController.shared.save() // save the item
-    }
-    
-    
-    private func moveItemNext(at sets:IndexSet, destination: Int) {
-        let itemToMove = sets.first!
-        let tasksForMove = filteredTasks.filter({!$0.completed && $0.list == 2 && !$0.focus})
-        
-        // If the item is moving down:
-        if itemToMove < destination {
-//            print(itemToMove)
-//            print(destination)
-            var startIndex = itemToMove + 1
-            let endIndex = destination - 1
-//            print(startIndex)
-//            print(endIndex)
-            var startOrder = tasksForMove[itemToMove].order
-//            print(startOrder)
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
-        }
-        
-        // Else if the item is moving up:
-        else if itemToMove > destination {
-            var startIndex = destination
-            let endIndex = itemToMove - 1
-            var startOrder = tasksForMove[destination].order + 1
-            let newOrder = tasksForMove[destination].order
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
-        }
-        
-        PersistenceController.shared.save() // save the item
-    }
-    
-    private func moveItemSomeday(at sets:IndexSet, destination: Int) {
-        let itemToMove = sets.first!
-        let tasksForMove = filteredTasks.filter({!$0.completed && $0.list == 3})
-        
-        // If the item is moving down:
-        if itemToMove < destination {
-//            print(itemToMove)
-//            print(destination)
-            var startIndex = itemToMove + 1
-            let endIndex = destination - 1
-//            print(startIndex)
-//            print(endIndex)
-            var startOrder = tasksForMove[itemToMove].order
-//            print(startOrder)
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = startOrder // set the moved task's order to its final value
-        }
-        
-        // Else if the item is moving up:
-        else if itemToMove > destination {
-            var startIndex = destination
-            let endIndex = itemToMove - 1
-            var startOrder = tasksForMove[destination].order + 1
-            let newOrder = tasksForMove[destination].order
-            // Change the order of all tasks between the task to move and the destination:
-            while startIndex <= endIndex {
-                tasksForMove[startIndex].order = startOrder
-                startOrder += 1
-                startIndex += 1
-            }
-            tasksForMove[itemToMove].order = newOrder // set the moved task's order to its final value
-        }
-        
-        PersistenceController.shared.save() // save the item
-    }
-    */
     
     var reviewAllButton: some View {
         Button {
@@ -429,7 +269,7 @@ struct ProjectTaskView: View {
                 
                 // Mark all tasks as reviewed:
                 for task in filteredTasks.filter({!$0.completed}) {
-                    task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: task.nextreviewdate ?? Date())
+                    task.nextreviewdate = Calendar.current.date(byAdding: .day, value: 7, to: Date())
                 }
                 PersistenceController.shared.save() // save the item
                 

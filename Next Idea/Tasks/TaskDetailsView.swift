@@ -208,6 +208,15 @@ struct TaskDetailsView: View {
                         }
                         .buttonStyle(BorderlessButtonStyle())
                     }
+                    
+                    else if taskHasChanged() { // if the task is not new, and has been modified, show a save changes button
+                        
+                        Button() {
+                            saveTask(toTop: true)
+                        } label: {
+                            Label("Save changes", systemImage: "externaldrive.fill")
+                        }
+                    }
                 }
                 
                 
@@ -286,11 +295,17 @@ struct TaskDetailsView: View {
                             if !dateActive {
                                 reminderActive = false
                             }
+                            else {
+                                date = Date() // when I activate the date, default to today, to avoid that it shows a date in the past
+                            }
                         }
                     Toggle("Reminder", isOn: $reminderActive)
                         .onChange(of: reminderActive) { _ in // if I activate the reminder, activate the date too
                             if reminderActive {
                                 dateActive = true
+                            }
+                            else {
+                                task?.cancelNotification()
                             }
                         }
                 }
@@ -339,12 +354,21 @@ struct TaskDetailsView: View {
                     Toggle("Hide until date", isOn: $hideUntilDate)
                 }
                 
-                TextField("Link", text: $link)
-                    .keyboardType(.URL)
-                    .autocorrectionDisabled()
-                    .autocapitalization(.none)
-                
-                
+                HStack {
+                    
+                    TextField("Link", text: $link)
+                        .keyboardType(.URL)
+                        .autocorrectionDisabled()
+                        .autocapitalization(.none)
+                    
+                    if link != "" {
+                        Link(destination: URL(string: link)!) {
+                            Image(systemName: "link")
+//                                .font(.title)
+                        }
+                    }
+                    
+                }
                 
                 if task != nil { // if this is not a new task
                     
@@ -373,60 +397,6 @@ struct TaskDetailsView: View {
                             secondaryButton: .cancel()
                         )
                     }
-                }
-                else if taskHasChanged() {
-                    
-                    Button() {
-                        saveTask(toTop: true)
-                    } label: {
-                        Label("Save changes", systemImage: "externaldrive.fill")
-                    }
-                    
-                    /*
-                    Group {
-                        if task.name != name {
-                            Text("Name has changed")
-                        }
-                        if task.note != note {
-                            Text("Note has changed")
-                        }
-                        if task.dateactive != dateActive {
-                            Text("Date active has changed")
-                        }
-                        if task.dateactive != dateActive {
-                            Text("Date active has changed")
-                        }
-                        if task.reminderactive != reminderActive {
-                            Text("Reminder active has changed")
-                        }
-                        if (task.date != date && task.date != nil) {
-                            Text("Date has changed")
-                        }
-                        if task.hideuntildate != hideUntilDate {
-                            Text("Hide until date has changed")
-                        }
-                    }
-                    Group {
-                        if task.waitingfor != waitingFor {
-                            Text("Waiting for has changed")
-                        }
-                        if task.list != list {
-                            Text("List has changed")
-                        }
-                        if task.recurring != recurring {
-                            Text("Recurring has changed")
-                        }
-                        if task.recurrence != recurrence {
-                            Text("Recurrence has changed from \(task.recurrence) to \(recurrence)")
-                        }
-                        if task.recurrencetype != recurrenceType {
-                            Text("Recurrence type has changed")
-                        }
-                    }
-                     */
-//                    if task?.link != link {
-//                        Text("Link has changed from \(task?.link ?? "") to \(link)")
-//                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
