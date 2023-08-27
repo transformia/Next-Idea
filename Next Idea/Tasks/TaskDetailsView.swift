@@ -61,6 +61,9 @@ struct TaskDetailsView: View {
     @State private var note = ""
 //    @State private var list: Int16 = 0
     @State private var focus = false
+    
+    @State private var addMultipleTasks = false
+    
     @State private var singleAction = false
     
     @State private var date = Date()
@@ -171,22 +174,13 @@ struct TaskDetailsView: View {
                         }
                     }
                     
-//                    Picker("List", selection: $list) {
-//                        ForEach(lists, id: \.self.0) {
-//                            Text($0.1)
-//                                .tag($0.0)
-//                        }
-//                    }
-//                    .onChange(of: list) { _ in
-//                        if list == 3 {
-//                            focus = false // deactivate focus if I set the list to Someday
-//                        }
-//                    }
-                    
                     Toggle("Focus", isOn: $focus)
                         .onChange(of: focus) { _ in
                             if focus {
-                                someday = false // if I focus on a Someday task, move it to Next
+                                someday = false // if I focus on a Someday task, remove it from Someday
+                                if selectedProject == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, add it to the single actions project, if it exists
+                                    selectedProject = projects.filter({$0.singleactions})[0] // assign the single action project to the task
+                                }
                             }
                         }
                     
@@ -207,6 +201,8 @@ struct TaskDetailsView: View {
                             }
                         }
                         .buttonStyle(BorderlessButtonStyle())
+                        
+                        Toggle("Add multiple tasks", isOn: $addMultipleTasks)
                     }
                     
                     else if taskHasChanged() { // if the task is not new, and has been modified, show a save changes button
@@ -295,14 +291,17 @@ struct TaskDetailsView: View {
                             if !dateActive {
                                 reminderActive = false
                             }
-                            else {
-                                date = Date() // when I activate the date, default to today, to avoid that it shows a date in the past
+                            else if !(task?.dateactive ?? true) {
+                                date = Date() // when I activate the date (but the task doesn't already have a date), default to today, to avoid that it shows a date in the past
                             }
                         }
                     Toggle("Reminder", isOn: $reminderActive)
                         .onChange(of: reminderActive) { _ in // if I activate the reminder, activate the date too
                             if reminderActive {
                                 dateActive = true
+//                                if !(task?.reminderactive ?? true) { // THIS DOESN'T WORK - I WOULD NEED TO CHANGE THE TIME, BUT KEEP THE DATE THE SAME!
+//                                    date = Date() // when I activate the reminder (but the task doesn't already have a reminder), default the time to now
+//                                }
                             }
                             else {
                                 task?.cancelNotification()
@@ -522,7 +521,14 @@ struct TaskDetailsView: View {
         }
         
         PersistenceController.shared.save()
-        dismiss() // dismiss the sheet
+        if !addMultipleTasks {
+            dismiss() // dismiss the sheet
+        }
+        else { // else if I want to add multiple tasks, just clear the task name and note
+            
+            name = ""
+            note = ""
+        }
     }
 }
 

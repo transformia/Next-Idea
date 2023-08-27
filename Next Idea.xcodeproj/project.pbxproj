@@ -32,7 +32,6 @@
 		4CD17BD32A055153005BA2E6 /* ProjectDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */; };
 		4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */; };
 		4CD17BD72A055676005BA2E6 /* ProjectPickerView_old.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD62A055676005BA2E6 /* ProjectPickerView_old.swift */; };
-		4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */; };
 		4CD17BDF2A07E30E005BA2E6 /* DatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */; };
 		4CE893E92A095DD700755167 /* QuickActionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893E82A095DD700755167 /* QuickActionView.swift */; };
 		4CE893EB2A0963B300755167 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE893EA2A0963B300755167 /* SearchView.swift */; };
@@ -88,7 +87,6 @@
 		4CD17BD22A055153005BA2E6 /* ProjectDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailsView.swift; sourceTree = "<group>"; };
 		4CD17BD42A05557C005BA2E6 /* ProjectTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectTaskView.swift; sourceTree = "<group>"; };
 		4CD17BD62A055676005BA2E6 /* ProjectPickerView_old.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectPickerView_old.swift; sourceTree = "<group>"; };
-		4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core Data Extensions.swift"; sourceTree = "<group>"; };
 		4CD17BDD2A06D5CF005BA2E6 /* Next Idea.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Next Idea.entitlements"; sourceTree = "<group>"; };
 		4CD17BDE2A07E30E005BA2E6 /* DatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePickerView.swift; sourceTree = "<group>"; };
 		4CE893E82A095DD700755167 /* QuickActionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionView.swift; sourceTree = "<group>"; };
@@ -204,7 +202,6 @@
 			children = (
 				4CCB16352A051F5000FE5376 /* Next_Idea.xcdatamodeld */,
 				4CCB16332A051F5000FE5376 /* Persistence.swift */,
-				4CD17BD92A06BB8C005BA2E6 /* Core Data Extensions.swift */,
 				4CFF09C92A6FFF0F006F4EF4 /* Extensions.swift */,
 			);
 			path = "Core data";
@@ -380,7 +377,6 @@
 				4CCB162D2A051F4F00FE5376 /* ContentView.swift in Sources */,
 				4CD17BD72A055676005BA2E6 /* ProjectPickerView_old.swift in Sources */,
 				4CD17BD52A05557C005BA2E6 /* ProjectTaskView.swift in Sources */,
-				4CD17BDA2A06BB8C005BA2E6 /* Core Data Extensions.swift in Sources */,
 				4CCB165F2A05215700FE5376 /* CompletedView.swift in Sources */,
 				4C990E872A154273000903E2 /* TagListView.swift in Sources */,
 				4C291B432A37010800106213 /* AddTaskButtonsView.swift in Sources */,
@@ -558,7 +554,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Next Idea/Next Idea.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;
@@ -592,7 +588,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Next Idea/Next Idea.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_ASSET_PATHS = "\"Next Idea/Preview Content\"";
 				DEVELOPMENT_TEAM = VWCW8YMM6Y;
 				ENABLE_PREVIEWS = YES;

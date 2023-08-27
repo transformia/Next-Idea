@@ -40,6 +40,13 @@ struct ProjectTaskView: View {
     
     @State private var showOnlyFocus = false
     
+    @State private var expandFocus = true
+    @State private var expandDueOverdue = false
+    @State private var expandNext = false
+    @State private var expandWaiting = false
+    @State private var expandDeferred = false
+    @State private var expandSomeday = false
+    
     var body: some View {
         VStack { // Contains project name, ZStack and Quick action buttons
             Text(project.name ?? "")
@@ -54,103 +61,215 @@ struct ProjectTaskView: View {
                     
                     // Focused, not deferred:
                     if filteredTasks.filter({$0.filterTasks(filter: "Focus") && !$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are non-completed focused tasks in the project
-                        Section("Focus") {
-                            ForEach(filteredTasks.filter({$0.filterTasks(filter: "Focus") && !$0.filterTasks(filter: "Deferred")})) { task in
-                                HStack {
-                                    TaskView(task: task)
+                        Section {
+                            if(expandFocus) {
+                                ForEach(filteredTasks.filter({$0.filterTasks(filter: "Focus") && !$0.filterTasks(filter: "Deferred")})) { task in
+                                    HStack {
+                                        TaskView(task: task)
+                                    }
+                                }
+                                .onMove(perform: { indices, destination in
+                                    moveItem(at: indices, destination: destination, filter: { task in
+                                        return task.project == project && task.filterTasks(filter: "Focus") && !task.filterTasks(filter: "Deferred")
+                                    })
+                                })
+                            }
+                        } header: {
+                            HStack {
+                                Label("Focus", systemImage: "scope")
+//                                        .font(.headline)
+                                Spacer()
+                                Text("\(countTasks(filter: "Focus"))")
+                                Image(systemName: expandFocus ? "chevron.down" : "chevron.right")
+                                    .foregroundColor(.blue)
+                                    .font(.footnote)
+                            }
+                            .contentShape(Rectangle()) // make the whole HStack tappable
+                            .onTapGesture {
+                                withAnimation {
+                                    expandFocus.toggle()
                                 }
                             }
-                            .onMove(perform: { indices, destination in
-                                moveItem(at: indices, destination: destination, filter: { task in
-                                    return task.project == project && task.filterTasks(filter: "Focus") && !task.filterTasks(filter: "Deferred")
-                                })
-                            })
                         }
                     }
                     
                     // Due tasks:
                     if !showOnlyFocus && filteredTasks.filter({$0.filterTasks(filter: "Due")}).count > 0 { // if I'm not showing only focused tasks, and there are non-completed due or overdue tasks that are not focused
-                        Section("Due and overdue") {
-                            ForEach(filteredTasks.filter({$0.filterTasks(filter: "Due")})) { task in
-                                HStack {
-                                    TaskView(task: task)
-                                }
-                            }
-                            .onMove(perform: { indices, destination in
-                                moveItem(at: indices, destination: destination, filter: { task in
-                                    return task.project == project && task.filterTasks(filter: "Due")
-                                })
-                            })
-                        }
-                    }
-                    
-                    if !showOnlyFocus { // if I'm not showing only focused tasks
-                        
-                        // Show non focused Next tasks:
-                        Section("Next") {
-                            ForEach(filteredTasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")})) { task in
-                                HStack {
-                                    TaskView(task: task)
-                                }
-                            }
-                            .onMove(perform: { indices, destination in
-                                moveItem(at: indices, destination: destination, filter: { task in
-                                    return task.project == project && task.filterTasks(filter: "Next") && !task.filterTasks(filter: "Deferred")
-                                })
-                            })
-                        }
-                        
-                        // Show waiting for tasks:
-                        if filteredTasks.filter({$0.filterTasks(filter: "Waiting for")}).count > 0 {
-                            Section("Waiting for") {
-                                ForEach(filteredTasks.filter({$0.filterTasks(filter: "Waiting for")})) { task in
+                        Section {
+                            if(expandDueOverdue) {
+                                ForEach(filteredTasks.filter({$0.filterTasks(filter: "Due")})) { task in
                                     HStack {
                                         TaskView(task: task)
                                     }
                                 }
                                 .onMove(perform: { indices, destination in
                                     moveItem(at: indices, destination: destination, filter: { task in
-                                        return task.project == project && task.filterTasks(filter: "Waiting for")
+                                        return task.project == project && task.filterTasks(filter: "Due") && !task.filterTasks(filter: "Deferred")
                                     })
                                 })
+                            }
+                        } header: {
+                            HStack {
+                                Label("Due and overdue", systemImage: "calendar")
+//                                        .font(.headline)
+                                Spacer()
+                                Text("\(countDueOverdueTasks())")
+                                Image(systemName: expandDueOverdue ? "chevron.down" : "chevron.right")
+                                    .foregroundColor(.blue)
+                                    .font(.footnote)
+                            }
+                            .contentShape(Rectangle()) // make the whole HStack tappable
+                            .onTapGesture {
+                                withAnimation {
+                                    expandDueOverdue.toggle()
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !showOnlyFocus {
+                        
+                        // Show non focused Next tasks:
+                        if filteredTasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                            Section {
+                                if expandNext {
+                                    ForEach(filteredTasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")})) { task in
+                                        HStack {
+                                            TaskView(task: task)
+                                        }
+                                    }
+                                    .onMove(perform: { indices, destination in
+                                        moveItem(at: indices, destination: destination, filter: { task in
+                                            return task.project == project && task.filterTasks(filter: "Next") && !task.filterTasks(filter: "Deferred")
+                                        })
+                                    })
+                                }
+                            } header: {
+                                HStack {
+                                    Label("Next", systemImage: "terminal.fill")
+                                    //                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(countTasks(filter: "Next"))")
+                                    Image(systemName: expandNext ? "chevron.down" : "chevron.right")
+                                        .foregroundColor(.blue)
+                                        .font(.footnote)
+                                }
+                                .contentShape(Rectangle()) // make the whole HStack tappable
+                                .onTapGesture {
+                                    withAnimation {
+                                        expandNext.toggle()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Show waiting for tasks:
+                        if filteredTasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                            Section {
+                                if expandWaiting {
+                                    ForEach(filteredTasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")})) { task in
+                                        HStack {
+                                            TaskView(task: task)
+                                        }
+                                    }
+                                    .onMove(perform: { indices, destination in
+                                        moveItem(at: indices, destination: destination, filter: { task in
+                                            return task.project == project && task.filterTasks(filter: "Waiting for") && !task.filterTasks(filter: "Deferred")
+                                        })
+                                    })
+                                }
+                            } header: {
+                                HStack {
+                                    Label("Waiting for", systemImage: "person.badge.clock")
+                                    //                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(countTasks(filter: "Waiting for"))")
+                                    Image(systemName: expandWaiting ? "chevron.down" : "chevron.right")
+                                        .foregroundColor(.blue)
+                                        .font(.footnote)
+                                }
+                                .contentShape(Rectangle()) // make the whole HStack tappable
+                                .onTapGesture {
+                                    withAnimation {
+                                        expandWaiting.toggle()
+                                    }
+                                }
                             }
                         }
                         
                         // Show deferred tasks:
                         if filteredTasks.filter({$0.filterTasks(filter: "Deferred")}).count > 0 {
-                            Section("Deferred") {
-                                ForEach(filteredTasks.filter({$0.filterTasks(filter: "Deferred")})) { task in
-                                    HStack {
-                                        TaskView(task: task)
+                            Section {
+                                if expandDeferred {
+                                    ForEach(filteredTasks.filter({$0.filterTasks(filter: "Deferred")})) { task in
+                                        HStack {
+                                            TaskView(task: task)
+                                        }
+                                    }
+                                    .onMove(perform: { indices, destination in
+                                        moveItem(at: indices, destination: destination, filter: { task in
+                                            return task.project == project && task.filterTasks(filter: "Deferred")
+                                        })
+                                    })
+                                }
+                            } header: {
+                                HStack {
+                                    Label("Deferred", systemImage: "calendar.badge.clock")
+                                    //                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(countTasks(filter: "Deferred"))")
+                                    Image(systemName: expandDeferred ? "chevron.down" : "chevron.right")
+                                        .foregroundColor(.blue)
+                                        .font(.footnote)
+                                }
+                                .contentShape(Rectangle()) // make the whole HStack tappable
+                                .onTapGesture {
+                                    withAnimation {
+                                        expandDeferred.toggle()
                                     }
                                 }
-                                .onMove(perform: { indices, destination in
-                                    moveItem(at: indices, destination: destination, filter: { task in
-                                        return task.project == project && task.filterTasks(filter: "Deferred")
-                                    })
-                                })
                             }
                         }
                         
                         // Show Someday tasks:
-                        Section("Someday") {
-                            ForEach(filteredTasks.filter({$0.filterTasks(filter: "Someday")})) { task in
+                        if filteredTasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                            Section {
+                                if expandSomeday {
+                                    ForEach(filteredTasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")})) { task in
+                                        HStack {
+                                            TaskView(task: task)
+                                            
+                                        }
+                                    }
+                                    .onMove(perform: { indices, destination in
+                                        moveItem(at: indices, destination: destination, filter: { task in
+                                            return task.project == project && task.filterTasks(filter: "Someday") && !task.filterTasks(filter: "Deferred")
+                                        })
+                                    })
+                                }
+                            } header: {
                                 HStack {
-                                    TaskView(task: task)
-                                    
+                                    Label("Someday", systemImage: "text.append")
+//                                        .font(.headline)
+                                    Spacer()
+                                    Text("\(countTasks(filter: "Someday"))")
+                                    Image(systemName: expandSomeday ? "chevron.down" : "chevron.right")
+                                        .foregroundColor(.blue)
+                                        .font(.footnote)
+                                }
+                                .contentShape(Rectangle()) // make the whole HStack tappable
+                                .onTapGesture {
+                                    withAnimation {
+                                        expandSomeday.toggle()
+                                    }
                                 }
                             }
-                            .onMove(perform: { indices, destination in
-                                moveItem(at: indices, destination: destination, filter: { task in
-                                    return task.project == project && task.filterTasks(filter: "Someday")
-                                })
-                            })
                         }
                     }
                 }
-                .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
-                .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
-    //            .listStyle(PlainListStyle())
+//                .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
+//                .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
+                .listStyle(PlainListStyle())
                 
                 // Add task buttons:
                 AddTaskButtonsView(defaultFocus: false, defaultWaitingFor: false, defaultProject: project, defaultTag: nil) // add the task to the "Next" list
@@ -252,6 +371,37 @@ struct ProjectTaskView: View {
         }
         
         PersistenceController.shared.save() // save the item
+    }
+    
+    private func countTasks(filter: String) -> Int {
+        if filter != "" {
+            return (project.tasks?.allObjects as! [Task]).filter({
+                $0.filterTasks(filter: filter)
+                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+            }).count
+        }
+        else {
+            return (project.tasks?.allObjects as! [Task]).filter({
+                !$0.completed
+                && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+            }).count
+        }
+    }
+    
+    private func countDueOverdueTasks() -> Int {
+        return (project.tasks?.allObjects as! [Task]).filter({
+            !$0.completed
+            && $0.dateactive && Calendar.current.startOfDay(for: $0.date ?? Date()) <= Calendar.current.startOfDay(for: Date())
+            && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+        }).count
+    }
+    
+    private func countWaitingForTasks() -> Int {
+        return (project.tasks?.allObjects as! [Task]).filter({
+            !$0.completed
+            && $0.waitingfor
+            && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
+        }).count
     }
     
     private func countTasksToBeReviewed() -> Int {

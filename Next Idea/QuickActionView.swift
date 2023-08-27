@@ -24,36 +24,24 @@ struct QuickActionView: View {
     @State private var showTagPicker = false
     @State private var showDatePicker = false
     
+    @State private var selectedProject: Project? // so that I can pass a project to the ProjectPickerView
+    @State private var selectedTags: [Tag?] = [] // so that I can pass tags to the TagPickerView
+    
     var body: some View {
         
         if tasks.filter({$0.selected}).count > 0 { // show icons to move the tasks to other lists if at least one task is selected
             VStack {
                 HStack {
-                    
-                    // Quick actions to move tasks to other lists:
-//                    Button {
-//                        let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
-//                        impactMed.impactOccurred() // haptic feedback
-//                        for task in tasks.filter({$0.selected}) {
-//                            task.list = 0
-//                            task.modifieddate = Date()
-//                        }
-//                        PersistenceController.shared.save()
-//                        deselectAllTasks()
-//                    } label: {
-//                        Image(systemName: "tray")
-//                            .resizable()
-//                            .frame(width: 26, height: 26)
-//                            .foregroundColor(.black)
-//                            .padding(10)
-//                    }
-                    
-                    Button { // makes the tasks focused, removes someday
+                    Button { // Puts the task at the bottom of the Focused list, removes someday, and puts it in the Single actions project if it doesn't have a project:
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.focus = true
                             task.someday = false
+                            task.order = (tasks.filter({!$0.completed}).last?.order ?? 0) + 1
+                            if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                                task.project = projects.filter({$0.singleactions})[0]
+                            }
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
@@ -66,12 +54,16 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     
-                    Button { // removes focus and someday
+                    Button { // Moves the task to the top of Next, and puts it in the Single actions project if it doesn't have a project:
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.focus = false
                             task.someday = false
+                            task.order = (tasks.filter({!$0.completed}).first?.order ?? 0) - 1
+                            if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                                task.project = projects.filter({$0.singleactions})[0]
+                            }
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
@@ -84,11 +76,15 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     
-                    Button { // sets to someday, remove focus
+                    Button { // Moves the task to the top of Someday, removes focus, and puts it in the Single actions project if it doesn't have a project:
                         let impactMed = UIImpactFeedbackGenerator(style: .medium) // haptic feedback
                         impactMed.impactOccurred() // haptic feedback
                         for task in tasks.filter({$0.selected}) {
                             task.someday = true
+                            task.order = (tasks.filter({!$0.completed}).first?.order ?? 0) - 1
+                            if task.project == nil && projects.filter({$0.singleactions}).count == 1 { // if the task has no project, and there is a single actions project, assign the single actions project to the task
+                                task.project = projects.filter({$0.singleactions})[0]
+                            }
                             task.focus = false
                             task.modifieddate = Date()
                         }
@@ -180,10 +176,10 @@ struct QuickActionView: View {
                             .padding(10)
                     }
                     .sheet(isPresented: $showTagPicker) {
-//                        TagsPickerView(tasks: tasks.filter({$0.selected}))
+                        TagsPickerView(selectedTags: $selectedTags, tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showProjectPicker) {
-//                        ProjectPickerView(tasks: tasks.filter({$0.selected}))
+                        ProjectPickerView(selectedProject: $selectedProject, tasks: tasks.filter({$0.selected}))
                     }
                     .sheet(isPresented: $showDatePicker) {
                         DatePickerView(tasks: tasks.filter({$0.selected}))

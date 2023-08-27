@@ -309,7 +309,7 @@ struct TaskView: View {
                     }
                     PersistenceController.shared.save() // save the item
                 } label: {
-                    Label("Waiting", systemImage: "stopwatch")
+                    Label("Waiting", systemImage: "person.badge.clock")
                 }
                 .tint(.gray)
 //            }

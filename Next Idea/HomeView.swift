@@ -87,7 +87,7 @@ struct HomeView: View {
 //                        WaitingForView()
                     } label: {
                         HStack {
-                            Label("Waiting for", systemImage: "stopwatch")
+                            Label("Waiting for", systemImage: "person.badge.clock")
                             Spacer()
                             Text("\(countTasks(filter: "Waiting for"))")
                         }
@@ -97,7 +97,7 @@ struct HomeView: View {
                         ListView(title: "Deferred")
                     } label: {
                         HStack {
-                            Label("Deferred", systemImage: "text.append")
+                            Label("Deferred", systemImage: "calendar.badge.clock")
                             Spacer()
                             Text("\(countTasks(filter: "Deferred"))")
                         }

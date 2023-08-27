@@ -26,6 +26,7 @@ struct ProjectListView: View {
     @State private var showSettingsView = false
     @State private var showSearchView = false
     
+    @State private var expandCompleted = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -51,17 +52,34 @@ struct ProjectListView: View {
                 }
                 .onMove(perform: moveItem)
                 
+                // The completed projects:
                 if projects.filter({$0.completed}).count > 0 {
-                    Section("Completed projects") {
-                        ForEach(projects.filter({$0.completed})) { project in
-                            ProjectView(project: project)
+                    Section {
+                        if expandCompleted {
+                            ForEach(projects.filter({$0.completed})) { project in
+                                ProjectView(project: project)
+                            }
                         }
+                    } header: {
+                        HStack {
+                            Text("Completed projects")
+                            Spacer()
+                            Image(systemName: expandCompleted ? "chevron.down" : "chevron.right")
+                                .foregroundColor(.blue)
+                                .font(.footnote)
+                        }
+                            .contentShape(Rectangle()) // make the whole HStack tappable
+                            .onTapGesture {
+                                withAnimation {
+                                    expandCompleted.toggle()
+                                }
+                            }
                     }
                 }
             }
-            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
-            .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
-//            .listStyle(PlainListStyle())
+//            .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
+//            .listStyle(SidebarListStyle()) // so that the sections are expandable and collapsible. Could instead use PlainListStyle, but with DisclosureGroups instead of Sections...
+            .listStyle(PlainListStyle())
             .toolbar {
                 
                 ToolbarItem(placement: .navigationBarLeading) {
