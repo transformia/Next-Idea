@@ -74,7 +74,17 @@ struct ProjectPickerView: View {
             List {
                 ForEach(projects.filter({!$0.completed})) { project in
                     if(project.name?.range(of: searchText, options: .caseInsensitive) != nil || searchText == "")  {
-                        Text(project.name ?? "")
+                        HStack {
+                            Text(project.name ?? "")
+                            
+                            Spacer()
+                            
+                            Image(systemName: project.icon ?? "book.fill")
+                                .resizable()
+                                .frame(width: 18, height: 18)
+                                .foregroundColor(Color(project.color ?? "black"))
+                                .padding(.leading, 3)
+                        }
                             .onTapGesture {
                                 if tasks != [] { // if I have called this view with at least one task, update the tasks and save
                                     for task in tasks {

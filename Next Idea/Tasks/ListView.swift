@@ -371,17 +371,17 @@ struct ListView: View {
                 QuickActionView()
                 
             }
-            .onAppear {
-                if title == "All tasks" {
-                    expandInbox = true
-                    expandFocus = true
-                    expandDueOverdue = false
-                    expandNext = false
-                    expandWaiting = false
-                    expandDeferred = false
-                    expandSomeday = false
-                }
-            }
+//            .onAppear {
+//                if title == "All tasks" {
+//                    expandInbox = true
+//                    expandFocus = true
+//                    expandDueOverdue = false
+//                    expandNext = false
+//                    expandWaiting = false
+//                    expandDeferred = false
+//                    expandSomeday = false
+//                }
+//            }
             .sheet(isPresented: $showSearchView) {
                 SearchView()
             }
@@ -405,7 +405,8 @@ struct ListView: View {
                         }
                         
                         if title == "All tasks" || title == "Next" {
-                            focusButton
+//                            focusButton
+                            expandCollapseSectionsButton
                         }
                         
                     }
@@ -651,13 +652,38 @@ struct ListView: View {
         }
     }*/
     
-    var focusButton: some View {
+    var expandCollapseSectionsButton: some View {
         Button {
-            showOnlyFocus.toggle()
+            if expandDueOverdue || expandNext || expandWaiting || expandDeferred || expandSomeday {
+                expandInbox = false
+                expandFocus = true
+                expandDueOverdue = false
+                expandNext = false
+                expandWaiting = false
+                expandDeferred = false
+                expandSomeday = false
+            }
+            else {
+                expandInbox = true
+                expandFocus = true
+                expandDueOverdue = true
+                expandNext = true
+                expandWaiting = true
+                expandDeferred = true
+                expandSomeday = true
+            }
         } label: {
-            Label("", systemImage: "scope")
+            Label("", systemImage: expandDueOverdue || expandNext || expandWaiting || expandDeferred || expandSomeday ? "list.bullet" : "list.bullet.indent")
         }
     }
+    
+//    var focusButton: some View {
+//        Button {
+//            showOnlyFocus.toggle()
+//        } label: {
+//            Label("", systemImage: "scope")
+//        }
+//    }
 }
 
 //struct ListView_Previews: PreviewProvider {

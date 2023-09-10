@@ -21,6 +21,8 @@ struct SearchView: View {
     // Variable determining whether the focus is on the search text field or not:
     @FocusState private var focused: Bool
     
+    @State private var selectedProject: Project? // to have something to pass to the ProjectPickerView, even if it doesn't use it
+    
     var body: some View {
         
         NavigationStack {
@@ -41,12 +43,23 @@ struct SearchView: View {
                             if(!task.completed) {
                                 if(task.name?.range(of: confirmedSearchText, options: .caseInsensitive) != nil || confirmedSearchText == "") { // if the task name contains the value of the search text, or the search text is blank
                                     NavigationLink {
-                                        ProjectTaskView(project: task.project ?? Project())
+                                        if task.project == nil {
+                                            ProjectPickerView(selectedProject: $selectedProject, tasks: [task])
+                                        }
+                                        else {
+                                            ProjectTaskView(project: task.project ?? Project())
+                                        }
                                     } label: {
                                         HStack {
                                             TaskView(task: task)
                                             
-                                            Image(systemName: task.project?.icon ?? "book.fill")
+                                            Image(systemName: task.project == nil ? "tray" : task.focus ? "scope" : task.someday ? "text.append" : "terminal.fill")
+                                                .resizable()
+                                                .frame(width: 18, height: 18)
+                                                .foregroundColor(.blue)
+                                                .padding(.leading, 3)
+                                            
+                                            Image(systemName: task.project?.icon ?? "")
                                                 .resizable()
                                                 .frame(width: 18, height: 18)
                                                 .foregroundColor(Color(task.project?.color ?? "black"))
