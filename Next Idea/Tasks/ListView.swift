@@ -21,8 +21,6 @@ struct ListView: View {
     
     let title: String // title of the view
     
-    @State var showOnlyFocus = false // determines whether other sections than Focused are shown or not
-    
     @State private var selectedProject: Project? // to have something to pass to the ProjectPickerView, even if it doesn't use it
     
     //    @Binding var selectedTab: Int // binding so that change made here impact the tab selected in ContentView
@@ -52,7 +50,7 @@ struct ListView: View {
                     List {
                         
                         // Inbox:
-                        if ( !showOnlyFocus && ( title == "Inbox" || title == "All tasks" || title == "Next" ) ) && tasks.filter({$0.filterTasks(filter: "Inbox")}).count > 0 { // if there are tasks without a project
+                        if ( title == "Inbox" || title == "All tasks" || title == "Next" ) && tasks.filter({$0.filterTasks(filter: "Inbox")}).count > 0 { // if there are tasks without a project
                             //                            Section("Inbox") {
                             Section {
                                 if(expandInbox) {
@@ -135,7 +133,7 @@ struct ListView: View {
                         }
                         
                         // Due:
-                        if ( !showOnlyFocus && ( title == "Due" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Due")}).count > 0 { // if there are focused tasks
+                        if (title == "Due" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Due")}).count > 0 { // if there are focused tasks
                             Section {
                                 if(expandDueOverdue) {
                                     ForEach(tasks.filter({$0.filterTasks(filter: "Due")})) { task in
@@ -184,7 +182,7 @@ struct ListView: View {
                         }
                         
                         // Next actions, not deferred:
-                        if ( !showOnlyFocus && ( title == "Next" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                        if (title == "Next" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
                             Section {
                                 if expandNext {
                                     ForEach(tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")})) { task in
@@ -228,7 +226,7 @@ struct ListView: View {
                         }
                         
                         // Waiting for:
-                        if ( !showOnlyFocus && ( title == "Waiting for" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are focused tasks
+                        if (title == "Waiting for" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are focused tasks
                             Section {
                                 if expandWaiting {
                                     ForEach(tasks.filter({$0.filterTasks(filter: "Waiting for") && !$0.filterTasks(filter: "Deferred")})) { task in
@@ -272,7 +270,7 @@ struct ListView: View {
                         }
                                                 
                         // Deferred:
-                        if ( !showOnlyFocus && ( title == "Deferred" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are non-completed deferred tasks
+                        if (title == "Deferred" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Deferred")}).count > 0 { // if there are non-completed deferred tasks
                             Section {
                                 if expandDeferred {
                                     ForEach(tasks.filter({$0.filterTasks(filter: "Deferred")})) { task in
@@ -316,7 +314,7 @@ struct ListView: View {
                         }
                         
                         // Someday:
-                        if ( !showOnlyFocus && ( title == "Someday" || title == "All tasks" ) ) && tasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                        if (title == "Someday" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
                             Section {
                                 if expandSomeday {
                                     ForEach(tasks.filter({$0.filterTasks(filter: "Someday") && !$0.filterTasks(filter: "Deferred")})) { task in
