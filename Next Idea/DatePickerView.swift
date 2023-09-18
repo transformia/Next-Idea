@@ -173,6 +173,7 @@ struct DatePickerView: View {
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
+                        deselectAllTasks()
                         dismiss() // dismiss the sheet
                     } label: {
                         Text("Save")
@@ -180,6 +181,15 @@ struct DatePickerView: View {
                 }
             }
         }
+    }
+    
+    private func deselectAllTasks() {
+        for task in tasks {
+            if task.selected {
+                task.selected = false
+            }
+        }
+        PersistenceController.shared.save()
     }
 }
 

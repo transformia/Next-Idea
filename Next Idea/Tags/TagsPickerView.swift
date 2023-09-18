@@ -44,11 +44,12 @@ struct TagsPickerView: View {
                         tag.name = searchText
                         tag.order = (tags.last?.order ?? 0) + 1
                         
-                        if tasks != [] { // if I have called this view with at least one task, update the tasks and save
+                        if tasks != [] { // if I have called this view with at least one task, update the tasks and save, and deselect all tasks
                             for task in tasks {
                                 tag.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
                                 print("Adding tag \(tag.name ?? "") to task \(task.name ?? "")")
                             }
+                            deselectAllTasks()
                             PersistenceController.shared.save()
                             
                         }
@@ -117,6 +118,15 @@ struct TagsPickerView: View {
             .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
 //            .listStyle(PlainListStyle())
         }
+    }
+    
+    private func deselectAllTasks() {
+        for task in tasks {
+            if task.selected {
+                task.selected = false
+            }
+        }
+        PersistenceController.shared.save()
     }
 }
 

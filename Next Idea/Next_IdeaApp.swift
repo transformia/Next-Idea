@@ -8,13 +8,60 @@
 import SwiftUI
 
 @main
+
+/*class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    var window: UIWindow?
+    
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Set up your Core Data stack here
+        
+        // Set the delegate for handling notifications
+        UNUserNotificationCenter.current().delegate = self
+        
+        // Register for remote notifications here
+        
+        return true
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.actionIdentifier == "CompleteAction" {
+            // Handle the "Complete Task" action
+            if let taskId = response.notification.request.content.userInfo["taskID"] as? UUID {
+                completeTask(withID: taskId)
+            }
+        }
+        
+        completionHandler()
+    }
+    
+    func completeTask(withID taskId: UUID) {
+        // Obtain your managed object context from your Core Data stack
+        let context = persistentContainer.viewContext
+        
+        // Fetch the task with the given ID
+        if let task = try? context.fetch(Task.fetchRequest(withID: taskId)).first as? Task {
+            // Set the task's 'completed' attribute to true
+            task.completed = true
+            
+            // Save the changes to Core Data
+            do {
+                try context.save()
+            } catch {
+                // Handle the error appropriately
+                print("Error saving to Core Data: \(error.localizedDescription)")
+            }
+        }
+    }
+}*/
+
+
 struct Next_IdeaApp: App {
     let persistenceController = PersistenceController.shared
     
     // Things that should run when the app launches:
     init() {
         getNotificationPermissions()
-//        createNotificationCategories()
+        createNotificationCategories()
     }
 
     var body: some Scene {
@@ -57,12 +104,20 @@ struct Next_IdeaApp: App {
     }
     
     private func createNotificationCategories() { // create the notification category and its actions
-//        print("Creating notification categories")
-        // Define the notification actions:
-//        let complete = UNNotificationAction(identifier: "COMPLETE_ACTION", title: "Done", options: [])
-        let open = UNNotificationAction(identifier: "OPEN_ACTION", title: "Open", options: [.foreground])
         
-        let category = UNNotificationCategory(identifier: "TASK", actions: [open] , intentIdentifiers: []) // define the notification category, containing 2 actions
+        let completeAction = UNNotificationAction(
+            identifier: "CompleteAction",
+            title: "Complete Task",
+            options: [.foreground]
+        )
+        
+        let category = UNNotificationCategory(
+            identifier: "TASK",
+            actions: [completeAction],
+            intentIdentifiers: [],
+            options: []
+        ) // define the notification category
+        
         UNUserNotificationCenter.current().setNotificationCategories([category]) // register the notification categories
     }
 }

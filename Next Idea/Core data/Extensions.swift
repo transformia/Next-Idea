@@ -55,7 +55,7 @@ extension Task {
         notificationContent.title = title
         notificationContent.subtitle = self.name ?? ""
         notificationContent.sound = UNNotificationSound.default
-//        notificationContent.categoryIdentifier = "TASK"
+        notificationContent.categoryIdentifier = "TASK"
         
         let dateComponents = Calendar.current.dateComponents(Set(arrayLiteral: Calendar.Component.year, Calendar.Component.month, Calendar.Component.day, Calendar.Component.hour, Calendar.Component.minute), from: reminderDate)
         

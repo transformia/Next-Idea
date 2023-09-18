@@ -45,7 +45,7 @@ struct QuickActionView: View {
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-//                        deselectAllTasks()
+                        deselectAllTasks()
                     } label: {
                         Image(systemName: "scope")
                             .resizable()
@@ -67,7 +67,7 @@ struct QuickActionView: View {
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-//                        deselectAllTasks()
+                        deselectAllTasks()
                     } label: {
                         Image(systemName: "terminal.fill")
                             .resizable()
@@ -89,7 +89,7 @@ struct QuickActionView: View {
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-//                        deselectAllTasks()
+                        deselectAllTasks()
                     } label: {
                         Image(systemName: "text.append")
                             .resizable()
@@ -106,7 +106,7 @@ struct QuickActionView: View {
                             task.modifieddate = Date()
                         }
                         PersistenceController.shared.save()
-//                        deselectAllTasks()
+                        deselectAllTasks()
                     } label: {
                         Image(systemName: "stopwatch")
                             .resizable()
@@ -144,6 +144,7 @@ struct QuickActionView: View {
                             }
                             PersistenceController.shared.save()
                         }
+                        deselectAllTasks()
                     } label: {
                         Image(systemName: "1.circle.fill")
                             .resizable()

@@ -23,6 +23,8 @@ struct SearchView: View {
     
     @State private var selectedProject: Project? // to have something to pass to the ProjectPickerView, even if it doesn't use it
     
+    @EnvironmentObject var homeActiveView: HomeActiveView // view selected in Home
+    
     var body: some View {
         
         NavigationStack {
@@ -82,6 +84,9 @@ struct SearchView: View {
 //                        .padding()
 //                }
             }
+        }
+        .onAppear {
+            homeActiveView.stringName = "Search" // change the tab name and logo
         }
     }
 }

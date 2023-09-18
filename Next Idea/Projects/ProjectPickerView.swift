@@ -47,11 +47,12 @@ struct ProjectPickerView: View {
                         project.order = (projects.last?.order ?? 0) + 1
                         project.singleactions = false
                         
-                        if tasks != [] { // if I have called this view with at least one task, update the tasks and save
+                        if tasks != [] { // if I have called this view with at least one task, update the tasks, deselect all tasks, and save
                             for task in tasks {
                                 project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
                                 print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
                             }
+                            deselectAllTasks()
                             PersistenceController.shared.save()
                         }
                         else { // else if I have called this from the TaskDetailsView, update the selected project so that I can save it in TaskDetailsView
@@ -86,11 +87,12 @@ struct ProjectPickerView: View {
                                 .padding(.leading, 3)
                         }
                             .onTapGesture {
-                                if tasks != [] { // if I have called this view with at least one task, update the tasks and save
+                                if tasks != [] { // if I have called this view with at least one task, update the tasks, deselect all tasks, and save
                                     for task in tasks {
                                         project.addToTasks(task) // note: the function addToTasks was created automatically by Core Data
                                         print("Adding project \(project.name ?? "") to task \(task.name ?? "")")
                                     }
+                                    deselectAllTasks()
                                     PersistenceController.shared.save()
                                 }
                                 else { // else if I have called this from the TaskDetailsView, update the selected project so that I can save it in
@@ -111,6 +113,15 @@ struct ProjectPickerView: View {
             }
             .padding(EdgeInsets(top: 0, leading: -8, bottom: 0, trailing: -8)) // reduce padding of the list items
         }
+    }
+    
+    private func deselectAllTasks() {
+        for task in tasks {
+            if task.selected {
+                task.selected = false
+            }
+        }
+        PersistenceController.shared.save()
     }
 }
 

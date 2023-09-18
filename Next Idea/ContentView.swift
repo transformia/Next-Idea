@@ -18,6 +18,39 @@ final class WeeklyReview: ObservableObject {
     @Published var active = false
 }
 
+final class HomeActiveView: ObservableObject {
+    @Published var stringName: String = "Home"
+    
+    func iconString(viewName: String) -> String {
+        switch(viewName) {
+        case "Home":
+            return "house"
+        case "All tasks":
+            return "list.bullet"
+        case "Inbox":
+            return "tray"
+        case "Focus":
+            return "scope"
+        case "Due":
+            return "calendar"
+        case "Next":
+            return "terminal.fill"
+        case "Waiting for":
+            return "person.badge.clock"
+        case "Deferred":
+            return "calendar.badge.clock"
+        case "Someday":
+            return "text.append"
+        case "Search":
+            return "magnifyingglass"
+        case "Completed":
+            return "checkmark.circle"
+        default:
+            return "tray"
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
@@ -64,6 +97,8 @@ struct ContentView: View {
     
     @StateObject var tab = Tab()
     
+    @StateObject var homeActiveView = HomeActiveView()
+    
     @StateObject var weeklyReview = WeeklyReview()
     
     @State private var showSearchView = false
@@ -73,7 +108,7 @@ struct ContentView: View {
             
             HomeView()
                 .tabItem {
-                    Label("Home", systemImage: "house")
+                    Label(homeActiveView.stringName, systemImage: homeActiveView.iconString(viewName: homeActiveView.stringName))
                 }
                 .tag(0)
             
@@ -85,11 +120,17 @@ struct ContentView: View {
             }
             .tag(1)
             
-            ListView(title: "All tasks")
+            ListView(title: "Next")
                 .tabItem {
-                    Label("All tasks", systemImage: "play")
+                    Label("Next actions", systemImage: "terminal.fill")
                 }
                 .tag(2)
+            
+//            ListView(title: "All tasks")
+//                .tabItem {
+//                    Label("All tasks", systemImage: "play")
+//                }
+//                .tag(2)
             
             NavigationStack {
                 TagListView()
@@ -110,6 +151,7 @@ struct ContentView: View {
         }
         .environmentObject(eventKitManager) // put the reminder lists and reminders in the environment
         .environmentObject(tab) // make the tab selection available to other views
+        .environmentObject(homeActiveView) // make the view selected in Home available to other views
         .environmentObject(weeklyReview) // make the weekly review activation status available to other views
         .onAppear {
             // Verify if some notifications need to be cancelled or created:

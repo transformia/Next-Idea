@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation // to be able to play a sound when a task is completed
 
 struct TaskView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -206,12 +207,22 @@ struct TaskView: View {
         }
         .swipeActions(edge: .leading) {
             
-            Button { // tick this task if it is not recurring, otherwise increment its date
-                completeTask(task: task)
-            } label: {
-                Label("Complete", systemImage: "checkmark")
+            if(!UserDefaults.standard.bool(forKey: "Checkbox")) { // if the checkbox is not activated in the settings, allow me to swipe to complete a task
+                Button { // tick this task if it is not recurring, otherwise increment its date
+                    completeTask(task: task)
+                } label: {
+                    Label("Complete", systemImage: "checkmark")
+                }
+                .tint(.green)
             }
-            .tint(.green)
+            
+            Button { // select or unselect this task
+                task.selected.toggle()
+                PersistenceController.shared.save()
+            } label: {
+                Label("Select", systemImage: "pin.circle")
+            }
+            .tint(.teal)
             
             // Move the task to the top or to the bottom:
             Button {
@@ -232,14 +243,6 @@ struct TaskView: View {
         }
         .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
                         
-            Button { // select or unselect this task
-                task.selected.toggle()
-                PersistenceController.shared.save()
-            } label: {
-                Label("Select", systemImage: "pin.circle")
-            }
-            .tint(.teal)
-            
             // Make the task focused:
             if !task.focus {
                 Button {
@@ -323,12 +326,24 @@ struct TaskView: View {
         // Deselect the task if it was selected:
         task.selected = false
         
+//        AudioServicesPlaySystemSound(1057) // play a sound
+//        AudioServicesPlaySystemSound(1075) // play a sound
+//        AudioServicesPlaySystemSound(1103) // play a sound
+        AudioServicesPlaySystemSound(1104) // play a sound - great!
+//        AudioServicesPlaySystemSound(1113) // play a sound - good
+//        AudioServicesPlaySystemSound(1117) // play a sound - good
+//        AudioServicesPlaySystemSound(1200) // play a sound
+        
         // If the task isn't recurring, complete it after a certain time:
         if !task.recurring {
-            task.ticked.toggle()
+            withAnimation {
+                task.ticked.toggle()
+            }
             task.modifieddate = Date()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) { // complete or uncomplete the task after N seconds
-                task.completed = task.ticked                
+                withAnimation {
+                    task.completed = task.ticked
+                }
                 PersistenceController.shared.save()
                 
                 // Cancel the notification if there was one:
@@ -343,6 +358,13 @@ struct TaskView: View {
         }
         // Else if the task is recurring, move its date forward:
         else { // else if the task is recurring, increment its date after N seconds, and remove the focus from it
+            // Deselect the task if it was selected:
+            task.selected = false
+            
+            withAnimation {
+                task.ticked.toggle() // mark the task as complete
+            }
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.50) {
                 switch(task.recurrencetype) {
                 case "days":
@@ -357,6 +379,7 @@ struct TaskView: View {
                     print("Invalid recurrence")
                 }
                 task.focus = false
+                task.ticked.toggle() // mark the task as not complete again
                 PersistenceController.shared.save()
                 
                 // Cancel the notification if there is a reminder, and create it again with the new date and time:

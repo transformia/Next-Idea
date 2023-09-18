@@ -21,6 +21,8 @@ struct HomeView: View {
     @State private var showSettingsView = false
     @State private var showSearchView = false
     
+    @EnvironmentObject var homeActiveView: HomeActiveView // view selected in Home
+    
     var body: some View {
         NavigationStack {
             List {
@@ -31,7 +33,7 @@ struct HomeView: View {
                         ListView(title: "All tasks")
                     } label: {
                         HStack {
-                            Label("All tasks", systemImage: "list.bullet")
+                            Label("All tasks", systemImage: homeActiveView.iconString(viewName: "All tasks"))
                             Spacer()
                             Text("\(countTasks(filter: ""))")
                         }
@@ -41,7 +43,7 @@ struct HomeView: View {
                         ListView(title: "Inbox")
                     } label: {
                         HStack {
-                            Label("Inbox", systemImage: "tray")
+                            Label("Inbox", systemImage: homeActiveView.iconString(viewName: "Inbox"))
                             Spacer()
                             Text("\(countTasks(filter: "Inbox"))")
                         }
@@ -51,7 +53,7 @@ struct HomeView: View {
                         ListView(title: "Focus")
                     } label: {
                         HStack {
-                            Label("Focus", systemImage: "scope")
+                            Label("Focus", systemImage: homeActiveView.iconString(viewName: "Focus"))
                             Spacer()
                             Text("\(countTasks(filter: "Focus"))")
                         }
@@ -62,7 +64,7 @@ struct HomeView: View {
 //                        DueTodayView()
                     } label: {
                         HStack {
-                            Label("Due and overdue", systemImage: "calendar")
+                            Label("Due and overdue", systemImage: homeActiveView.iconString(viewName: "Due"))
                             Spacer()
                             Text("\(countDueOverdueTasks())")
                         }
@@ -76,7 +78,7 @@ struct HomeView: View {
                         ListView(title: "Next")
                     } label: {
                         HStack {
-                            Label("Next actions", systemImage: "terminal.fill")
+                            Label("Next actions", systemImage: homeActiveView.iconString(viewName: "Next"))
                             Spacer()
                             Text("\(countTasks(filter: "Next"))")
                         }
@@ -87,7 +89,7 @@ struct HomeView: View {
 //                        WaitingForView()
                     } label: {
                         HStack {
-                            Label("Waiting for", systemImage: "person.badge.clock")
+                            Label("Waiting for", systemImage: homeActiveView.iconString(viewName: "Waiting for"))
                             Spacer()
                             Text("\(countTasks(filter: "Waiting for"))")
                         }
@@ -97,7 +99,7 @@ struct HomeView: View {
                         ListView(title: "Deferred")
                     } label: {
                         HStack {
-                            Label("Deferred", systemImage: "calendar.badge.clock")
+                            Label("Deferred", systemImage: homeActiveView.iconString(viewName: "Deferred"))
                             Spacer()
                             Text("\(countTasks(filter: "Deferred"))")
                         }
@@ -107,7 +109,7 @@ struct HomeView: View {
                         ListView(title: "Someday")
                     } label: {
                         HStack {
-                            Label("Someday", systemImage: "text.append")
+                            Label("Someday", systemImage: homeActiveView.iconString(viewName: "Someday"))
                             Spacer()
                             Text("\(countTasks(filter: "Someday"))")
                         }
@@ -116,17 +118,20 @@ struct HomeView: View {
                     NavigationLink {
                         SearchView()
                     } label: {
-                        Label("Search", systemImage: "magnifyingglass")
+                        Label("Search", systemImage: homeActiveView.iconString(viewName: "Search"))
                     }
                     
                     NavigationLink {
                         CompletedView()
                     } label: {
-                        Label("Completed tasks", systemImage: "checkmark.circle")
+                        Label("Completed tasks", systemImage: homeActiveView.iconString(viewName: "Completed"))
                     }
                     
                 }
                 
+            }
+            .onAppear {
+                homeActiveView.stringName = "Home" // change the tab name and logo
             }
             .listStyle(PlainListStyle())
             .toolbar {

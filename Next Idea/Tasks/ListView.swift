@@ -25,6 +25,7 @@ struct ListView: View {
     
     //    @Binding var selectedTab: Int // binding so that change made here impact the tab selected in ContentView
     @EnvironmentObject var tab: Tab
+    @EnvironmentObject var homeActiveView: HomeActiveView // view selected in Home
     
     //    @State private var showOtherTasksDueToday =  false
     
@@ -368,6 +369,11 @@ struct ListView: View {
                 
                 QuickActionView()
                 
+            }
+            .onAppear {
+                if tab.selection != 2 {
+                    homeActiveView.stringName = title // change the tab name and logo, except if I open the Next actions tab
+                }
             }
 //            .onAppear {
 //                if title == "All tasks" {

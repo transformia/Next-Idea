@@ -15,6 +15,8 @@ struct CompletedView: View {
         animation: .default)
     private var tasks: FetchedResults<Task>
     
+    @EnvironmentObject var homeActiveView: HomeActiveView // view selected in Home
+    
     var body: some View {
         
         VStack {
@@ -49,6 +51,9 @@ struct CompletedView: View {
 //                }
 //                .padding(.bottom, 20)
 //            }
+        }
+        .onAppear {
+            homeActiveView.stringName = "Completed" // change the tab name and logo
         }
         .navigationTitle("Completed tasks")
         .navigationBarTitleDisplayMode(.inline)
