@@ -58,7 +58,7 @@ struct TaskView: View {
             HStack {
                 
                 if weeklyReview.active {
-                    Image(systemName: Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? "figure.yoga" : "figure.mind.and.body")
+                    Image(systemName: Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? "lightbulb.2.fill" : "lightbulb.2")
                         .foregroundColor(Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date()) ? .green : nil)
                         .onTapGesture { // if the task has a next review date today or in the past, push it forward by 7 days. Else set it back to today
                             if Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) {
@@ -91,7 +91,8 @@ struct TaskView: View {
                     .foregroundColor(task.ticked && !task.completed ? .gray // color the task if it is ticked, but not if it is already in the completed tasks view.
                                      : weeklyReview.active && (Calendar.current.startOfDay(for: task.nextreviewdate ?? Date()) > Calendar.current.startOfDay(for: Date())) ? .green // color the task green if weekly review is active, and the next review date is in the future
                                      : task.selected ? .teal // color the task teal if it is selected
-                                     : task.waitingfor ? .gray : nil // color the task if it is waiting for
+                                     : task.waitingfor ? .gray // color the task if it is waiting for
+                                     : (task.project?.sequential ?? false) && !task.isFirst() ? .gray : nil // color the task if it is in a sequential project, and it is not the first task of that project
                     )
                     .strikethrough(task.ticked && !task.completed) // strike through the task if it is ticked, but not if it is already in the completed tasks view
                
@@ -207,22 +208,14 @@ struct TaskView: View {
         }
         .swipeActions(edge: .leading) {
             
-            if(!UserDefaults.standard.bool(forKey: "Checkbox")) { // if the checkbox is not activated in the settings, allow me to swipe to complete a task
+//            if(!UserDefaults.standard.bool(forKey: "Checkbox")) { // if the checkbox is not activated in the settings, allow me to swipe to complete a task
                 Button { // tick this task if it is not recurring, otherwise increment its date
                     completeTask(task: task)
                 } label: {
                     Label("Complete", systemImage: "checkmark")
                 }
                 .tint(.green)
-            }
-            
-            Button { // select or unselect this task
-                task.selected.toggle()
-                PersistenceController.shared.save()
-            } label: {
-                Label("Select", systemImage: "pin.circle")
-            }
-            .tint(.teal)
+//            }
             
             // Move the task to the top or to the bottom:
             Button {
@@ -242,6 +235,14 @@ struct TaskView: View {
             .tint(.orange)
         }
         .swipeActions(edge: .trailing) { // move the task to another list, or edit its details
+            
+            Button { // select or unselect this task
+                task.selected.toggle()
+                PersistenceController.shared.save()
+            } label: {
+                Label("Select", systemImage: "pin.circle")
+            }
+            .tint(.teal)
                         
             // Make the task focused:
             if !task.focus {

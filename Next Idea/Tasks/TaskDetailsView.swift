@@ -371,10 +371,10 @@ struct TaskDetailsView: View {
                 
                 if task != nil { // if this is not a new task
                     
-                    HStack {
-                        Text("Next review date")
-                        DatePicker("", selection: $nextReviewDate, displayedComponents: .date)
-                    }
+//                    HStack {
+//                        Text("Next review date")
+//                        DatePicker("", selection: $nextReviewDate, displayedComponents: .date)
+//                    }
                     
                     Button(role: .destructive) {
                         showDeleteAlert = true

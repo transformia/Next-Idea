@@ -286,10 +286,10 @@ struct ProjectTaskView: View {
                     } label: {
                         HStack {
                             if weeklyReview.active {
-                                Label("", systemImage: "figure.yoga")
+                                Label("", systemImage: "lightbulb.2.fill")
                             }
                             else {
-                                Label("", systemImage: "figure.mind.and.body")
+                                Label("", systemImage: "lightbulb.2")
                             }
                             Text("\(countTasksToBeReviewed())")
                         }

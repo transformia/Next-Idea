@@ -64,10 +64,10 @@ struct TagListView: View {
                         weeklyReview.active.toggle()
                     } label: {
                         if weeklyReview.active {
-                            Label("", systemImage: "figure.yoga")
+                            Label("", systemImage: "lightbulb.2.fill")
                         }
                         else {
-                            Label("", systemImage: "figure.mind.and.body")
+                            Label("", systemImage: "lightbulb.2")
                         }
                     }
                 }

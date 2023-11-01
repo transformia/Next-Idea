@@ -149,10 +149,10 @@ struct HomeView: View {
                         } label: {
                             HStack {
                                 if weeklyReview.active {
-                                    Label("", systemImage: "figure.yoga")
+                                    Label("", systemImage: "lightbulb.2.fill")
                                 }
                                 else {
-                                    Label("", systemImage: "figure.mind.and.body")
+                                    Label("", systemImage: "lightbulb.2")
                                 }
                                 Text("\(countTasksToBeReviewed())")
                             }
@@ -162,6 +162,9 @@ struct HomeView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
+                        
+//                        Text("Hash: \(calcHashKey())")
+                        
                         Button {
                             showSearchView.toggle()
                         } label: {
@@ -204,11 +207,6 @@ struct HomeView: View {
     
     private func countTasksToBeReviewed() -> Int {
         return tasks.filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
-//        var count = 0
-//        for task in tasks {
-//            count += (project.tasks?.allObjects as! [Task]).filter({!$0.completed && Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date())}).count
-//        }
-//        return count
     }
     
     private func countDueOverdueTasks() -> Int {
@@ -225,6 +223,14 @@ struct HomeView: View {
             && $0.waitingfor
             && ( !weeklyReview.active || Calendar.current.startOfDay(for: $0.nextreviewdate ?? Date()) <= Calendar.current.startOfDay(for: Date()) ) // review mode is active, or the task has a next review date before the end of today
         }).count
+    }
+    
+    private func calcHashKey() -> Int {
+        var hashKey = 0
+        for task in tasks.filter({!$0.completed}) {
+            hashKey += task.name?.count ?? 0
+        }
+        return hashKey
     }
 }
 

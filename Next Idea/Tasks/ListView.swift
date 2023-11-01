@@ -183,10 +183,11 @@ struct ListView: View {
                         }
                         
                         // Next actions, not deferred:
-                        if (title == "Next" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")}).count > 0 {
+                        if (title == "Next" || title == "All tasks") && tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred") && ( !($0.project?.sequential ?? false) || $0.isFirst() ) }).count > 0 {
                             Section {
                                 if expandNext {
-                                    ForEach(tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred")})) { task in
+                                    // Show tasks that Next, not Deferred, and that are either not in a project, are in a non sequential project, or are the first task of their project
+                                    ForEach(tasks.filter({$0.filterTasks(filter: "Next") && !$0.filterTasks(filter: "Deferred") && ( !($0.project?.sequential ?? false) || $0.isFirst() )})) { task in
                                         NavigationLink {
                                             ProjectTaskView(project: task.project ?? Project())
                                         } label: {
@@ -399,10 +400,10 @@ struct ListView: View {
                         } label: {
                             HStack {
                                 if weeklyReview.active {
-                                    Label("", systemImage: "figure.yoga")
+                                    Label("", systemImage: "lightbulb.2.fill")
                                 }
                                 else {
-                                    Label("", systemImage: "figure.mind.and.body")
+                                    Label("", systemImage: "lightbulb.2")
                                 }
                                 Text("\(countTasksToBeReviewed())")
                             }

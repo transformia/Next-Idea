@@ -37,6 +37,7 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentCloudKitContainer(name: "Next_Idea")
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy // added 2023-09-19 to try to solve sync issues between mac and iPhone app: indicates that in-memory changes trump iCloud store changes
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }

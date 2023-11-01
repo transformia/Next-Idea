@@ -120,11 +120,11 @@ struct ContentView: View {
             }
             .tag(1)
             
-            ListView(title: "Next")
-                .tabItem {
-                    Label("Next actions", systemImage: "terminal.fill")
-                }
-                .tag(2)
+//            ListView(title: "Next")
+//                .tabItem {
+//                    Label("Next actions", systemImage: "terminal.fill")
+//                }
+//                .tag(2)
             
 //            ListView(title: "All tasks")
 //                .tabItem {
@@ -139,6 +139,14 @@ struct ContentView: View {
                 Label("Tags", systemImage: "tag")
             }
             .tag(3)
+            
+            NavigationStack {
+                ReviewView()
+            }
+            .tabItem {
+                Label("Review", systemImage: "lightbulb.2.fill")
+            }
+            .tag(4)
         }
         .onAppear {
             // Import new reminders from Apple Reminders - once on startup, then every x minutes while the app is in the foreground, and whenever it returns from the background:

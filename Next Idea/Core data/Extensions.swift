@@ -23,7 +23,7 @@ extension Task {
         case "Waiting for":
             return (!self.completed && self.waitingfor) // return true if the task is not completed, has a project and is waiting for
         case "Next":
-            return (!self.completed && self.project != nil && !self.focus && !self.someday) // return true if the task is not completed, has a project, is not focused, is not someday
+            return (!self.completed && self.project != nil && !self.focus && !self.someday) // return true if the task is not completed, has a project, is not focused, and is not someday
         case "Someday":
             return (!self.completed && self.project != nil && self.someday) // return true if the task is not completed, has a project and is someday
         default:
@@ -38,6 +38,19 @@ extension Task {
             }
         }
         return false
+    }
+    
+    func isFirst() -> Bool { // returns true if this task is the first non completed task of its project, taking into account that Focus comes before Next, and Next comes before the rest
+        if !self.completed && self.focus {
+            return true // show the task if it is focused and not completed
+        }
+        else if !self.completed && self.filterTasks(filter: "Next") && self == (self.project?.tasks?.allObjects as? [Task])?.sorted(by: {$0.order < $1.order}).filter({!$0.completed}).first && (self.project?.tasks?.allObjects as? [Task])?.filter({$0.filterTasks(filter: "Focus")}).count == 0 {
+            return true // show the task if it is in the Next list, is not completed, and is the first task in the order of tasks of its project - and there is no focused task in this project
+        }
+        else {
+            return false
+        }
+//        return self == (self.project?.tasks?.allObjects as? [Task])?.sorted(by: {$0.order < $1.order}).filter({!$0.completed}).first
     }
     
     func createNotification() { // create a notification for this task at the date and time specified in the task, using the same id as the task

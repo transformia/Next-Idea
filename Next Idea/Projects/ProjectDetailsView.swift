@@ -24,6 +24,7 @@ struct ProjectDetailsView: View {
     @State private var note = ""
     @State private var selectedIcon = "book.fill"
     @State private var selectedColor = "black"
+    @State private var sequential = false // for sequential projects, only the first task is shown when looking at the Next list (except when viewed from within the project)
     
     @FocusState private var focused: Bool
     
@@ -43,6 +44,7 @@ struct ProjectDetailsView: View {
                             otherProject.singleactions = false
                         }
                         project?.singleactions = true
+                        project?.sequential = false
                     } label: {
                         Text("Set as single actions project, and set all others as not")
                     }
@@ -55,6 +57,7 @@ struct ProjectDetailsView: View {
                         note = project?.note ?? ""
                         selectedIcon = project?.icon ?? "book.fill"
                         selectedColor = project?.color ?? "black"
+                        sequential = project?.sequential == true
                         if project == nil { // if this is a new project, focus on the project name
                             focused = true
                         }
@@ -87,6 +90,14 @@ struct ProjectDetailsView: View {
                         ForEach(colors, id: \.self) {
                             Text($0)
                         }
+                    }
+                }
+                
+                if !(project?.singleactions ?? true) {
+                    HStack {
+                        Text("Sequential project")
+                        Spacer()
+                        Toggle("", isOn: $sequential)
                     }
                 }
                 
@@ -170,6 +181,7 @@ struct ProjectDetailsView: View {
             project.note = note
             project.icon = selectedIcon
             project.color = selectedColor
+            project.sequential = sequential
             project.singleactions = false
             project.createddate = Date()
         }
@@ -179,6 +191,7 @@ struct ProjectDetailsView: View {
             project?.modifieddate = Date()
             project?.icon = selectedIcon
             project?.color = selectedColor
+            project?.sequential = sequential
         }
         PersistenceController.shared.save()
         dismiss() // dismiss the sheet
